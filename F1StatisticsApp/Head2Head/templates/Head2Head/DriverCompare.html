@@ -1,0 +1,218 @@
+{% extends 'Head2Head/main.html' %}
+
+<style>
+
+</style>
+
+
+
+{% block content %}
+
+<br>
+<div style="text-align: center;">
+    <h1>
+        Compare Drivers<br>
+    
+    </h1>
+    <form action="" method="GET">
+        <!-- {% csrf_token %} -->
+
+
+    <select name="driver1">
+        {% for i in myDrivers %}
+            <option value="{{ i.No }}"  {% if i.No == Qaulystats.d1no %}selected{% endif %} >{{i.Name}} {{i.Surname}}</option>
+        {% endfor %}
+        </select>
+      
+        <select name="driver2">
+            {% for i in myDrivers %}
+                <option value="{{ i.No }}" {% if i.No == Qaulystats.d2no %}selected{% endif %} >{{i.Name}} {{i.Surname}}</option>
+            {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-primary">GO</button>
+        </form>
+</div>
+
+<div class="tabs">
+  <div class="tab-2">
+    <label for="tab2-1">Qualy Statistics</label>
+    <input id="tab2-1" name="tabs-two" type="radio" checked="checked">
+    <div>
+        <div style="text-align: center;">
+            
+                
+        
+                {% load static %}
+                
+                <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th scope="col" style="font-size: 30px;"> <img src="{% static '' %}{{Qaulystats.d1img}}" alt="My image"><br> {{Qaulystats.d1}}
+                        </th>
+                        <th scope="col"><img style="height: 300px;" src="{% static 'Head2Head/Drivers/vs.png' %}" alt="My image"> </th>
+                        <th scope="col" style="font-size: 30px;"><img  src="{% static '' %}{{Qaulystats.d2img}}" alt="My image"> <br>{{Qaulystats.d2}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                       
+                        <tr style="font-size: 30px;">
+                        <td>{{Qaulystats.d1pole}}</td>
+                         <td>Number of Poles</td>
+                         <td>{{Qaulystats.d2pole}}</td>
+                     </tr>
+        
+                     <tr style="font-size: 30px;">
+                        <td>{{Qaulystats.d1best}}</td>
+                         <td>Best Qualifying Position</td>
+                         <td>{{Qaulystats.d2best}}</td>
+                     </tr>
+        
+                     <tr style="font-size: 30px;">
+                        <td>{{Qaulystats.d1worst}}</td>
+                         <td>Worst Qualifying Position</td>
+                         <td>{{Qaulystats.d2worst}}</td>
+                     </tr>
+        
+                     <tr style="font-size: 30px;">
+                        <td>{{Qaulystats.d1avg}}</td>
+                         <td>Average Qualifying Position</td>
+                         <td>{{Qaulystats.d2avg}}</td>
+                     </tr>
+        
+                     <tr style="font-size: 30px;">
+                        <td>{{Qaulystats.d1q3}}</td>
+                         <td>Q3 Appearances</td>
+                         <td>{{Qaulystats.d2q3}}</td>
+                     </tr>
+        
+                     <tr style="font-size: 30px;">
+                        <td>{{Qaulystats.d1q2}}</td>
+                         <td>Q2 Appearances</td>
+                         <td>{{Qaulystats.d2q2}}</td>
+                     </tr>
+                     <tr style="font-size: 30px;">
+        
+                         <td colspan="3" >Average Qualifying Gap
+                             <br> <strong style="font-size: 15px; font-weight: bold;">If negative driver on left is ahead</strong>
+                         </td>
+        
+                     </tr>
+        
+                     <tr style="font-size: 30px;">
+        
+                        <td colspan="3" >{{Qaulystats.delta}}</td>
+        
+                    </tr>
+                    </tbody>
+                  </table>
+        
+        
+                </div>
+
+    </div>
+  </div>
+
+
+  <div class="tab-2">
+    <label for="tab2-2">Race Statistics</label>
+    <input id="tab2-2" name="tabs-two" type="radio">
+    <div>
+      
+
+
+        <div style="text-align: center;">
+            
+                
+        
+            {% load static %}
+            
+            <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col" style="font-size: 30px;"> <img src="{% static '' %}{{Qaulystats.d1img}}" alt="My image"><br> {{Qaulystats.d1}}
+                    </th>
+                    <th scope="col"><img style="height: 300px;" src="{% static 'Head2Head/Drivers/vs.png' %}" alt="My image"> </th>
+                    <th scope="col" style="font-size: 30px;"><img  src="{% static '' %}{{Qaulystats.d2img}}" alt="My image"> <br>{{Qaulystats.d2}}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                   
+                    <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1total}}</td>
+                     <td>Total Points</td>
+                     <td>{{Racestats.d2total}}</td>
+                 </tr>
+    
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1avgpts}}</td>
+                     <td>Average Points</td>
+                     <td>{{Racestats.d2avgpts}}</td>
+                 </tr>
+
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1avgptsnc}}</td>
+                     <td>Average Points with NC</td>
+                     <td>{{Racestats.d2avgptsnc}}</td>
+                 </tr>
+    
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1team}}%</td>
+                     <td>Team Point Contriburion</td>
+                     <td>{{Racestats.d2team}}%</td>
+                 </tr>
+    
+    
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1wins}}</td>
+                     <td>Wins</td>
+                     <td>{{Racestats.d2wins}}</td>
+                 </tr>
+    
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1pod}}</td>
+                     <td>Podiums</td>
+                     <td>{{Racestats.d2pod}}</td>
+                 </tr>
+
+
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1best}}</td>
+                     <td>Best Finish</td>
+                     <td>{{Racestats.d2best}}</td>
+                 </tr>
+
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1avgfin}}</td>
+                     <td>Average Finish</td>
+                     <td>{{Racestats.d2avgfin}}</td>
+                 </tr>
+
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1dnf}}</td>
+                     <td>DNFs</td>
+                     <td>{{Racestats.d2dnf}}</td>
+                 </tr>
+
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1avgposgain}}</td>
+                     <td>Average Postion Gain</td>
+                     <td>{{Racestats.d2avgposgain}}</td>
+                 </tr>
+
+                 <tr style="font-size: 30px;">
+                    <td>{{Racestats.d1mostposgain}}</td>
+                     <td>Most Postion Gain</td>
+                     <td>{{Racestats.d2mostposgain}}</td>
+                 </tr>
+                </tbody>
+              </table>
+    
+    
+            </div>
+
+
+    </div>
+  </div>
+</div>
+      {% endblock %}

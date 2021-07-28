@@ -1,0 +1,32 @@
+{% extends 'Head2Head/main.html' %}
+
+{% block content %}
+    <h1>View Drivers</h1>
+
+    <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col"> </th>
+            <th scope="col">Name </th>
+            <th scope="col">Surname</th>
+            <th scope="col">No</th>
+            <th scope="col">Car</th>
+            <th scope="col">Abbr</th>
+          </tr>
+        </thead>
+        <tbody>
+           
+         {% for i in myDrivers %}
+         <tr style="font-size: 30px;">
+            {% load static %}
+            <td><img src="{% static '' %}{{i.img}}" alt="My image"></td>
+             <td>{{i.Name}}</td>
+             <td>{{i.Surname}}</td>
+             <td>{{i.No}}</td>
+             <td>{{i.Car}}</td>
+             <td>{{i.Abbr}}</td>
+         </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+      {% endblock %}
