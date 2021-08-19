@@ -11,11 +11,20 @@ import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
 from django.contrib import messages #import messages
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.http import JsonResponse
+from django.templatetags.static import static
+from django.http import JsonResponse
+import json
+from django.conf import settings
+from json import dumps
 # Create your views here.
 
 #Qauly variables
 d1 = ''
 d2 = ''
+d1No = ''
+d2No = ''
 Driver1Best = 0
 Driver2Best = 0
 Driver1Worst = 0
@@ -29,7 +38,8 @@ Driver2Q2 = 0
 Delta = 0
 Driver1Poles = 0
 Driver2Poles = 0
-
+D1QaulyRecord = 0
+D2QaulyRecord = 0
 
 #Race variables
 
@@ -37,6 +47,7 @@ D1TotalPoints = 0
 D1AveragePoints = 0
 D1AverageWithNCPoints = 0
 D1AverageFinishs = 0
+D1AverageFinishsWithNC = 0
 D1BestFinish = 0
 D1RaceWins = 0
 D1RacePodiums = 0
@@ -45,11 +56,13 @@ D1RaceFastestLaps = 0
 D1RaceDNF = 0
 D1AveragePositionGain = 0
 D1MostPositionsGained = 0
+D1RaceRecord = 0
 
 D2TotalPoints = 0
 D2AveragePoints = 0
 D2AverageWithNCPoints = 0
 D2AverageFinishs = 0
+D2AverageFinishsWithNC = 0
 D2BestFinish = 0
 D2RaceWins = 0
 D2RacePodiums = 0
@@ -58,16 +71,311 @@ D2RaceFastestLaps = 0
 D2RaceDNF = 0
 D2AveragePositionGain = 0
 D2MostPositionsGained = 0
+D2RaceRecord = 0
+
+
+#/////////////////////////////////////////////  Admin Tasks  ///////////////////////////////////////////////////////////////////
+
+def Load(request):
+    # debug_flag = settings.DEBUG
+    # PopupObject = {
+    #     'value': 'True'
+    # }
+    # dataJSON = dumps(PopupObject)
+    # dataJSON = True
+    # context = {'data':dataJSON}]
+
+    ListOFprac = PracticeClass.objects.all()
+    ListOFqualy = QaulyClass.objects.all()
+    ListOFspr = SprintClass.objects.all()
+    ListOFstart = StartingClass.objects.all()
+    ListOFpit = PitstopClass.objects.all()
+    ListOFfast = FastesLapClass.objects.all()
+    ListOFres= ResultClass.objects.all()
+
+    ListOFSessions = []
+    ListOFSessions.append(PracticeClass.objects.model._meta.db_table)
+    ListOFSessions.append(QaulyClass.objects.model._meta.db_table)
+    ListOFSessions.append(SprintClass.objects.model._meta.db_table)
+    ListOFSessions.append(StartingClass.objects.model._meta.db_table)
+    ListOFSessions.append(PitstopClass.objects.model._meta.db_table)
+    ListOFSessions.append(FastesLapClass.objects.model._meta.db_table)
+    ListOFSessions.append(ResultClass.objects.model._meta.db_table)
+    ListOFSessions.append("ALL")
+
+    ListofGrandPrix = GetLabels()
+    ListofGrandPrix.append("ALL")
+    value = request.GET.get('value','')
+    context = {'data':value, "gplist" : ListofGrandPrix, "sesslist":ListOFSessions,'prac':ListOFprac, "qualy" : ListOFqualy, "sprint":ListOFspr,
+     "start":ListOFstart,'pit':ListOFpit, "fast" : ListOFfast, "res":ListOFres,
+    
+    }
+    return render(request,'Head2Head/LoadData.html',context)
+
+def LoadAllNewData(request):
+    if request.method == 'POST':
+        form = CheckForm(request.POST)
+        if form.is_valid():
+            Password = form.cleaned_data['pw']
+            if Password == os.environ.get('DjangoPw'):
+                # LoadDrivers()
+                LoadRaceWeekendData()
+                return HttpResponseRedirect('load')
+            else:
+                dataJSON = False
+                context = {'data':dataJSON}
+                url = 'load?value=False'
+                return HttpResponseRedirect(url)
+
+def DeleteSpecifiedData(request):
+    if request.method == 'POST':
+        form = DeleteSpecificForm(request.POST)
+        if form.is_valid():
+            Password = form.cleaned_data['pw']
+            Session = form.cleaned_data['sess']
+            Grandprix = form.cleaned_data['gp']
+            if Password == os.environ.get('DjangoPw') or os.environ.get('DjangoPw') == None:
+                # LoadDrivers()
+                DelSpeciFiedMethod(Grandprix,Session)
+                return HttpResponseRedirect('load')
+            else:
+                dataJSON = False
+                context = {'data':dataJSON}
+                url = 'load?value=False'
+                return HttpResponseRedirect(url)
+
+def DelSpeciFiedMethod(GrandPrix,Session):
+    if Session == 'ALL' and GrandPrix == 'ALL':
+        PracticeClass.objects.all().delete()
+        QaulyClass.objects.all().delete()
+        SprintClass.objects.all().delete()
+        StartingClass.objects.all().delete()
+        PitstopClass.objects.all().delete()
+        FastesLapClass.objects.all().delete()
+        ResultClass.objects.all().delete()
+    elif Session == 'ALL':
+        PracticeClass.objects.filter(GP = GrandPrix).delete()
+        QaulyClass.objects.filter(GP = GrandPrix).delete()
+        SprintClass.objects.filter(GP = GrandPrix).delete()
+        StartingClass.objects.filter(GP = GrandPrix).delete()
+        PitstopClass.objects.filter(GP = GrandPrix).delete()
+        FastesLapClass.objects.filter(GP = GrandPrix).delete()
+        ResultClass.objects.filter(GP = GrandPrix).delete()
+    elif GrandPrix == 'ALL':
+        if Session == PracticeClass.objects.model._meta.db_table:
+            PracticeClass.objects.all().delete()
+        if Session == QaulyClass.objects.model._meta.db_table:
+            QaulyClass.objects.all().delete()
+        if Session == SprintClass.objects.model._meta.db_table:
+            SprintClass.objects.all().delete()
+        if Session == StartingClass.objects.model._meta.db_table:
+            StartingClass.objects.all().delete()
+        if Session == PitstopClass.objects.model._meta.db_table:
+            PitstopClass.objects.all().delete()
+        if Session == FastesLapClass.objects.model._meta.db_table:
+            FastesLapClass.objects.all().delete()
+        if Session == ResultClass.objects.model._meta.db_table:
+            ResultClass.objects.all().delete()
+    # else :
+    #     if Session == PracticeClass.objects.model._meta.db_table:
+    #         PracticeClass.objects.filter(GP = GrandPrix).delete()
+    #     if Session == QaulyClass.objects.model._meta.db_table:
+    #         QaulyClass.objects.filter(GP = GrandPrix).delete()
+    #     if Session == SprintClass.objects.model._meta.db_table:
+    #         SprintClass.objects.filter(GP = GrandPrix).delete()
+    #     if Session == StartingClass.objects.model._meta.db_table:
+    #         StartingClass.objects.filter(GP = GrandPrix).delete()
+    #     if Session == PitstopClass.objects.model._meta.db_table:
+    #         PitstopClass.objects.filter(GP = GrandPrix).delete()
+    #     if Session == FastesLapClass.objects.model._meta.db_table:
+    #         FastesLapClass.objects.filter(GP = GrandPrix).delete()
+    #     if Session == ResultClass.objects.model._meta.db_table:
+    #         ResultClass.objects.filter(GP = GrandPrix).delete()
+    
 
 
 
+
+
+
+
+
+
+
+class LineGraphClass: 
+    def __init__(self, Label= '', Data = [],Color =''): 
+        self.Label = Label 
+        self.Data = Data
+        self.Color = Color
+    
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=3)
+    
+    def to_dict(self):
+      return {"data": self.Data, "label": self.Label, "borderColor": self.Color, "fill": False}
+
+#/////////////////////////////////////////////  Graphs  ///////////////////////////////////////////////////////////////////
+def Graphs(request):
+
+    # listofLabels = GetLabels()
+    # ListofObjects = GetObjects(listofLabels)
+
+    # context = {'myObjects':ListofObjects,'myLabels' : listofLabels}
+    return render(request,'Head2Head/Graph.html')
+
+def GetGraphData(request, *args, **kwargs):
+    listofLabels = GetLabels()
+    ListofObjects = GetObjects(listofLabels)
+    
+    # jsonLabels = json.dumps(listofLabels)
+    results = [obj.to_dict() for obj in ListofObjects]
+
+    jsdata = json.dumps({"results": results})
+
+
+    data = { "title" : "Point Progression", 
+             "labels": listofLabels,
+             "items" : results }
+    return JsonResponse(data, safe=False)
+
+#////////////////////////////////////////////  Graph data  ///////////////////////////////////////////////////////////////////
+def GetLabels():
+    QaulyList = QaulyClass.objects.all()
+    GPList = []
+    for t in QaulyList:
+        if t.GP in GPList:
+            x= 2
+        else:
+            GPList.append(t.GP)
+    return GPList
+
+def GetObjects(GPList):
+    driverList = DriverClass.objects.all()
+    RaceList = ResultClass.objects.all()
+    SrpintList = SprintClass.objects.all()
+    Objectlist = []
+
+
+    for x in driverList:
+        DriverTotalPoints = 0
+        DriverTotalPointList = []
+        for y in GPList:
+            RaceSession = next((z for z in RaceList if z.No == x.No and z.GP == y),'NotFound')
+            SprintSession = next((z for z in SrpintList if z.No == x.No and z.GP == y),'NotFound')
+
+            if SprintSession != 'NotFound':
+                DriverTotalPoints += SprintSession.Pts
+
+            if RaceSession != 'NotFound':
+                DriverTotalPoints += RaceSession.Pts
+                DriverTotalPointList.append(DriverTotalPoints)
+            else:
+                DriverTotalPointList.append(DriverTotalPoints)
+
+            
+
+        if x.Car.upper() == "RED BULL RACING HONDA":
+            LineColor = '#0600ef'
+        elif x.Car.upper() == "MERCEDES":
+            LineColor = '#00d2be'
+        elif x.Car.upper() == "MCLAREN MERCEDES":
+            LineColor = '#FF9800'
+        elif x.Car.upper() == "FERRARI":
+            LineColor = '#dc0000'
+        elif x.Car.upper() == "ALPHATAURI HONDA":
+            LineColor = '#2b4562'
+        elif x.Car.upper() == "ASTON MARTIN MERCEDES":
+            LineColor = '#006f62'
+        elif x.Car.upper() == "ALPINE RENAULT":
+            LineColor = '#0090ff'
+        elif x.Car.upper() == "ALFA ROMEO RACING FERRARI":
+            LineColor = '#900000'
+        elif x.Car.upper() == "WILLIAMS MERCEDES":
+            LineColor = '#005aff'
+        elif x.Car.upper() == "HAAS FERRARI":
+            LineColor = '#ffffff'
+
+        NewObject = LineGraphClass()
+        NewObject.Color = LineColor
+        NewObject.Label = x.Abbr
+        NewObject.Data = DriverTotalPointList
+
+        Objectlist.append(NewObject)
+
+    return Objectlist
+
+def getQualyGaps():
+    QaulyList = QaulyClass.objects.all()
+    DriverList = DriverClass.objects.all()
+    class QualyGraph(object):
+        pass
+
+    GPList = GetLabels()
+    AllDriversWithTime = []
+    for x in DriverList:
+        print(x.Name)
+        DriverTotalTime = []
+        for y in GPList:
+            QualySession = next((z for z in QaulyList if z.No == x.No and z.GP == y),'NotFound')
+
+            if QualySession != 'NotFound':
+                if QualySession.Q3 != '':
+                    if QualySession.Q3 == 'DNF':
+                        if QualySession.Pos != 'NC'and QualySession.Pos != 'RT':
+                            DriverTime = QualySession.Q2
+
+                    else:
+                        if QualySession.Pos != 'NC'and QualySession.Pos != 'RT':
+                            DriverTime = QualySession.Q3
+
+                elif QualySession.Q2 != '':
+                    if QualySession.Q3 == 'DNF':
+                        if QualySession.Pos != 'NC'and QualySession.Pos != 'RT':
+                            DriverTime = QualySession.Q1
+
+                    else:
+                        if QualySession.Pos != 'NC'and QualySession.Pos != 'RT':
+                            if QualySession.Q2 == 'DNF':
+                                DriverTime = QualySession.Q1
+                            else:
+                                DriverTime = QualySession.Q2
+
+                else:
+                    if QualySession.Pos != 'NC'and QualySession.Pos != 'RT':
+                        if QualySession.Q1 != 'DNF':
+                            DriverTime = QualySession.Q1
+                
+            DriverTotalTime.append(DriverTime)
+        ConvertedDriverTime = []
+        for time in DriverTotalTime:
+            minute = time[:time.index(':')]
+            second = time[time.index(':') + 1 :time.index('.') ]
+            milliseconds = time[-3:]
+
+            Compiled = (int(minute)*60000) + (int(second)*1000) + int(milliseconds)
+
+            ConvertedDriverTime.append(Compiled)
+
+        NewDriver = QualyGraph()
+        NewDriver.Driver = x.Name + ' ' + x.Surname
+        NewDriver.AvgTime = sum(ConvertedDriverTime)/len(ConvertedDriverTime)/100
+        AllDriversWithTime.append(NewDriver)
+    FastestDriverTime = min(d.AvgTime for  d in AllDriversWithTime)
+    AllDriversWithTime.sort(key=lambda item: item.AvgTime, reverse = True)
+    print("works")
+
+
+
+
+
+#/////////////////////////////////////////////  F1 statistsics  ///////////////////////////////////////////////////////////////////
 def index(request):
-    # LoadDrivers()
-    # LoadQauly()
-    # GetStartingGrid()
-    # GetFastLaps()
-    # GetRaceResult()
+    testIFsprintweekend("https://www.formula1.com/en/results.html/2021/races/1072/great-britain/race-result.html")
     return render(request,'Head2Head/index.html')
+
+def FakeAdmin(request):
+    return render(request,'Head2Head/Fake.html')
 
 def drivers(request):
     DriverObjetList = DriverClass.objects.all()
@@ -98,12 +406,14 @@ def comparedrivers(request):
             searchd2 = [x for x in DriverObjetList if x.No == driv2]
 
 
-            Qualyobject = {'d1best': Driver1Best, 'd2best': Driver2Best,
+            Qualyobject = {'d1qualy': D1QaulyRecord, 'd2qualy': D2QaulyRecord,
+                            'd1best': Driver1Best, 'd2best': Driver2Best,
                             'd1worst': Driver1Worst, 'd2worst': Driver2Worst,
                             'd1avg': Driver1Avg, 'd2avg': Driver2Avg,
                             'd1q3': Driver1Q3, 'd2q3': Driver2Q3,
                             'd1q2': Driver1Q2, 'd2q2': Driver2Q2,
                             'd1': d1, 'd2': d2,
+                            'd1No': d1No, 'd2No': d2No,
                             'd1img': searchd1[0].img, 'd2img': searchd2[0].img,
                             'd1pole': Driver1Poles, 'd2pole': Driver2Poles,
                             'd1no': driv1, 'd2no': driv2,
@@ -111,10 +421,12 @@ def comparedrivers(request):
             
             }
 
-            Raceobject = {'d1total': D1TotalPoints, 'd2total': D2TotalPoints,
+            Raceobject = {'d1race': D1RaceRecord, 'd2race': D2RaceRecord,
+                            'd1total': D1TotalPoints, 'd2total': D2TotalPoints,
                             'd1avgpts': D1AveragePoints, 'd2avgpts': D2AveragePoints,
                             'd1avgptsnc': D1AverageWithNCPoints, 'd2avgptsnc': D2AverageWithNCPoints,
                             'd1avgfin': D1AverageFinishs, 'd2avgfin': D2AverageFinishs,
+                            'd1avgfinWithNC': D1AverageFinishsWithNC, 'd2avgfinWithNC': D2AverageFinishsWithNC,
                             'd1best': D1BestFinish, 'd2best': D2BestFinish,
                             'd1wins': D1RaceWins, 'd2wins': D2RaceWins,
                             'd1pod': D1RacePodiums, 'd2pod': D2RacePodiums,
@@ -176,6 +488,7 @@ def compareteams(request):
                             'd1avgpts': D1AveragePoints, 'd2avgpts': D2AveragePoints,
                             'd1avgptsnc': D1AverageWithNCPoints, 'd2avgptsnc': D2AverageWithNCPoints,
                             'd1avgfin': D1AverageFinishs, 'd2avgfin': D2AverageFinishs,
+                            'd1avgfinWithNC': D1AverageFinishsWithNC, 'd2avgfinWithNC': D2AverageFinishsWithNC,
                             'd1best': D1BestFinish, 'd2best': D2BestFinish,
                             'd1wins': D1RaceWins, 'd2wins': D2RaceWins,
                             'd1pod': D1RacePodiums, 'd2pod': D2RacePodiums,
@@ -202,18 +515,7 @@ def compareteams(request):
     return render(request,'Head2Head/TeamCompare.html',context)
 
 
-def Load(request):
-    return render(request,'Head2Head/loadData.html')
 
-def LoadAllNewData(request):
-    LoadDrivers()
-    LoadQauly()
-    GetStartingGrid()
-    GetFastLaps()
-    GetRaceResult()
-    GetSprintRaces()
-    messages.success(request, "Successfuly Loaded New Data" )
-    return HttpResponseRedirect('Load')
 #/////////////////////////////////////////////  Get statistsics  ///////////////////////////////////////////////////////////////////
 
 
@@ -254,6 +556,9 @@ def GetQaulyDriverStats(Driver1,Driver2):
     D1Skipped = False
     D2Skipped = False
 
+    D1Record = 0
+    D2Record = 0
+
     GPCount = []
     countd1 =  0
     countd2 = 0
@@ -282,7 +587,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
                 for s in d1qualsession:
                     if s.No == x.No:
                         countPos +=1
-                        Driver1PosList.append(countPos)
+                        # Driver1PosList.append(countPos)
                         break
                     else:
                         countPos +=1
@@ -296,7 +601,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
                 for s in d2qualsession:
                     if s.No == p.No:
                         countPos +=1
-                        Driver2PosList.append(countPos)
+                        # Driver2PosList.append(countPos)
                         break
                     else:
                         countPos +=1
@@ -339,20 +644,43 @@ def GetQaulyDriverStats(Driver1,Driver2):
                 Driver2Time = p.Q1
 
         if D1Skipped == False:
-            if int(x.Pos) <= 10:
-                D1Q3 += 1
-                D1Q2 += 1
-            if int(x.Pos) > 10 and int(x.Pos) <= 15:
-                D1Q2 += 1
+            if x.Pos != 'NC' and x.Pos != 'RT':
+                if int(x.Pos) <= 10:
+                    D1Q3 += 1
+                    D1Q2 += 1
+                if int(x.Pos) > 10 and int(x.Pos) <= 15:
+                    D1Q2 += 1
         if D2Skipped == False:
-            if int(p.Pos) <= 10:
-                D2Q3 += 1
-                D2Q2 += 1
-            if int(p.Pos) > 10 and int(p.Pos) <= 15:
-                D2Q2 += 1
+            if p.Pos != 'NC' and p.Pos != 'RT':
+                if int(p.Pos) <= 10:
+                    D2Q3 += 1
+                    D2Q2 += 1
+                if int(p.Pos) > 10 and int(p.Pos) <= 15:
+                    D2Q2 += 1
         
+    
 
-        if Driver1Time == 'DNF' or Driver1Time == 'RT' or Driver2Time == 'DNF' or Driver2Time == 'RT' or Driver1Time == '' or Driver2Time == '':
+        if D1Skipped == False and D2Skipped == False:
+            if x.Pos == "RT" or x.Pos == "NC":
+                if p.Pos == "RT" or p.Pos == "NC": 
+                    D1Record += 0
+                    D2Record += 0
+                else:
+                    D2Record += 1
+            elif p.Pos == "RT" or p.Pos == "NC":
+                if x.Pos == "RT" or x.Pos == "NC": 
+                    D1Record += 0
+                    D2Record += 0
+                else:
+                    D1Record += 1
+            else:
+                if int(x.Pos) < int(p.Pos):
+                    D1Record += 1
+                elif int(x.Pos) > int(p.Pos):
+                    D2Record += 1
+
+
+        if Driver1Time == 'DNF' or Driver1Time == 'RT' or Driver2Time == 'DNF' or Driver2Time == 'RT' or Driver1Time == '' or Driver2Time == '' or x.Pos == 'NC' or p.Pos == 'NC':
             D1Skipped = False
             D2Skipped = False
         else:
@@ -361,6 +689,12 @@ def GetQaulyDriverStats(Driver1,Driver2):
             D1Skipped = False
             D2Skipped = False
         
+       
+
+    global D1QaulyRecord
+    D1QaulyRecord = D1Record 
+    global D2QaulyRecord
+    D2QaulyRecord = D2Record
 
     global Driver1Best
     Driver1Best = min(Driver1PosList) 
@@ -396,6 +730,11 @@ def GetQaulyDriverStats(Driver1,Driver2):
     d1 = Driver1Sessions[0].Driver
     global d2
     d2 = Driver2Sessions[0].Driver
+
+    global d1No
+    d1No = Driver1Sessions[0].No
+    global d2No
+    d2No = Driver2Sessions[0].No
 
     global Driver1Poles
     Driver1Poles = len([z for z in Driver1PosList if z == 1])
@@ -440,6 +779,9 @@ def GetRaceDriverStats(Driver1,Driver2):
     Driver1 = Driver1Sessions[0].Driver
     Driver2 = Driver2Sessions[0].Driver
 
+    D1Record = 0
+    D2Record = 0
+
     #Used for tracking if driver has skipped a race
     #Get a list of all the GP's
     GPList = []
@@ -450,7 +792,9 @@ def GetRaceDriverStats(Driver1,Driver2):
             GPList.append(t.GP)
 
     Driver1PosList = []
+    Driver1PosListWithNC = []
     Driver2PosList = []
+    Driver2PosListWithNC = []
 
     D1Skipped = False
     D2Skipped = False
@@ -467,18 +811,20 @@ def GetRaceDriverStats(Driver1,Driver2):
         p = next((z for z in Driver2Sessions if z.GP == y),'NotFound')
 
         #Add drivers position gain/loss to list dnf on included
-        if x.Time == 'DNF' or x.Time == 'DNS':
+        if x.Time == 'DNF' or x.Time == 'DNS' or x.Pos == "DQ":
             h = 'I have to use this cause python is drunk and cant pick up !='
         else:
             StartPos = next((z.Pos for z in StartingGridList if z.No == x.No and z.GP == y),'NotFound')
-            PositionsMade = int(StartPos)  - int(x.Pos)
-            D1PositionGainList.append(PositionsMade)
-        if p.Time == 'DNF' or p.Time == 'DNS':
+            if StartPos != 'NotFound':
+                PositionsMade = int(StartPos)  - int(x.Pos)
+                D1PositionGainList.append(PositionsMade)
+        if p.Time == 'DNF' or p.Time == 'DNS' or p.Pos == "DQ":
             h = 'I have to use this cause python i drunk and cant pick up !='
         else:
             StartPos = next((z.Pos for z in StartingGridList if z.No == p.No and z.GP == y),'NotFound')
-            PositionsMade = int(StartPos) - int(p.Pos)
-            D2PositionGainList.append(PositionsMade)
+            if StartPos != 'NotFound':
+                PositionsMade = int(StartPos) - int(p.Pos)
+                D2PositionGainList.append(PositionsMade)
 
         #Total DNFS
         if x.Time == 'DNF':
@@ -495,13 +841,13 @@ def GetRaceDriverStats(Driver1,Driver2):
         # Get drivers Postions thyve finiished in and the points they ended with
         # CHeck if driver has been classifed and depending on that add to one list or another
         if D1Skipped == False:
-            if x.Pos == "RT" or x.Pos == "NC":
+            if x.Pos == "RT" or x.Pos == "NC" or x.Pos == "DQ":
                 d1qualsession = [z for z in RaceList if z.GP == x.GP]
                 countPos = 0
                 for s in d1qualsession:
                     if s.No == x.No:
                         countPos +=1
-                        Driver1PosList.append(countPos)
+                        Driver1PosListWithNC.append(countPos)
                         Driver1PointListWithNC.append(int(x.Pts))
                         break
                     else:
@@ -509,17 +855,18 @@ def GetRaceDriverStats(Driver1,Driver2):
 
             else:
                 Driver1PosList.append(int(x.Pos))
+                Driver1PosListWithNC.append(int(x.Pos))
                 Driver1PointList.append(int(x.Pts))
                 Driver1PointListWithNC.append(int(x.Pts))
 
         if D2Skipped == False:
-            if p.Pos == "RT" or p.Pos == "NC":
+            if p.Pos == "RT" or p.Pos == "NC" or p.Pos == "DQ":
                 d2qualsession = [z for z in RaceList if z.GP == p.GP]
                 countPos = 0
                 for s in d2qualsession:
                     if s.No == p.No:
                         countPos +=1
-                        Driver2PosList.append(countPos)
+                        Driver2PosListWithNC.append(countPos)
                         Driver2PointListWithNC.append(int(p.Pts))
                         break
                     else:
@@ -527,6 +874,7 @@ def GetRaceDriverStats(Driver1,Driver2):
             
             else:
                 Driver2PosList.append(int(p.Pos))
+                Driver2PosListWithNC.append(int(p.Pos))
                 Driver2PointList.append(int(p.Pts))
                 Driver2PointListWithNC.append(int(p.Pts))
 
@@ -542,6 +890,26 @@ def GetRaceDriverStats(Driver1,Driver2):
                 D1FastestLapsCounter += 1
             elif int(D1FastestLaps.Pos) > int(D2FastestLaps.Pos):
                D2FastestLapsCounter += 1
+        
+        #who finiahed ahead
+        if D1Skipped == False and D2Skipped == False:
+            if x.Pos == "RT" or x.Pos == "NC" or x.Pos == "DQ":
+                if p.Pos == "RT" or p.Pos == "NC" or p.Pos == "DQ": 
+                    D1Record += 0
+                    D2Record += 0
+                else:
+                    D2Record += 1
+            elif p.Pos == "RT" or p.Pos == "NC" or p.Pos == "DQ":
+                if x.Pos == "RT" or x.Pos == "NC" or x.Pos == "DQ": 
+                    D1Record += 0
+                    D2Record += 0
+                else:
+                    D1Record += 1
+            else:
+                if int(x.Pos) < int(p.Pos):
+                    D1Record += 1
+                else:
+                    D2Record += 1
             
     D1Wins = len([z for z in Driver1PosList if z == 1])
     D2Wins = len([z for z in Driver2PosList if z == 1])
@@ -586,6 +954,10 @@ def GetRaceDriverStats(Driver1,Driver2):
     Pointob = GetTeamPoints(D1LastTeam,D2LastTeam)
 
 
+    global D1RaceRecord
+    D1RaceRecord = D1Record
+
+
     global D1TotalPoints
     D1TotalPoints = D1Total
 
@@ -598,6 +970,9 @@ def GetRaceDriverStats(Driver1,Driver2):
     global D1AverageFinishs
     D1AverageFinishs = round(sum(Driver1PosList)/len(Driver1PosList),2)
 
+    global D1AverageFinishsWithNC
+    D1AverageFinishsWithNC = round(sum(Driver1PosListWithNC)/len(Driver1PosListWithNC),2)
+
     global D1BestFinish
     D1BestFinish = min(Driver1PosList)
 
@@ -608,7 +983,10 @@ def GetRaceDriverStats(Driver1,Driver2):
     D1RacePodiums = D1Podiums
 
     global D1TeamContribution
-    D1TeamContribution = round((sum(D1PointsWithTeam)/Pointob["T1Points"]) * 100,2)
+    if Pointob["T1Points"] > 0:
+        D1TeamContribution = round((sum(D1PointsWithTeam)/Pointob["T1Points"]) * 100,2)
+    else:
+        D1TeamContribution = 0
 
     global D1RaceFastestLaps
     D1FastestLaps = D1FastestLapsCounter
@@ -623,6 +1001,10 @@ def GetRaceDriverStats(Driver1,Driver2):
     D1MostPositionsGained = max(D1PositionGainList)
 
     #//////////////////////////////////////////////////////// driver 2
+
+    global D2RaceRecord
+    D2RaceRecord = D2Record
+
     global D2TotalPoints
     D2TotalPoints = D2Total
 
@@ -635,6 +1017,9 @@ def GetRaceDriverStats(Driver1,Driver2):
     global D2AverageFinishs
     D2AverageFinishs = round(sum(Driver2PosList)/len(Driver2PosList),2)
 
+    global D2AverageFinishsWithNC
+    D2AverageFinishsWithNC = round(sum(Driver2PosListWithNC)/len(Driver2PosListWithNC),2)
+
     global D2BestFinish
     D2BestFinish = min(Driver2PosList)
 
@@ -645,7 +1030,10 @@ def GetRaceDriverStats(Driver1,Driver2):
     D2RacePodiums = D2Podiums
 
     global D2TeamContribution
-    D2TeamContribution = round((sum(D2PointsWithTeam)/Pointob["T2Points"]) * 100,2)
+    if Pointob["T2Points"] > 0:
+        D2TeamContribution = round((sum(D2PointsWithTeam)/Pointob["T2Points"]) * 100,2)
+    else:
+        D2TeamContribution = 0
 
     global D2RaceFastestLaps
     D2FastestLaps = D2FastestLapsCounter
@@ -733,8 +1121,8 @@ def GetTeamQaulyStats(Team1,Team2):
                     for s in d1qualsession:
                         if s.No == d1.No:
                             countPos +=1
-                            x[countDriverPos].Pos = countPos
-                            Team1PosList.append(countPos)
+                            # x[countDriverPos].Pos = countPos
+                            # Team1PosList.append(countPos)
                             break
                         else:
                             countPos +=1
@@ -751,8 +1139,8 @@ def GetTeamQaulyStats(Team1,Team2):
                     for s in d2qualsession:
                         if s.No == d2.No:
                             countPos +=1
-                            p[countDriverPos].Pos = countPos
-                            Team2PosList.append(countPos)
+                            # p[countDriverPos].Pos = countPos
+                            # Team2PosList.append(countPos)
                             break
                         else:
                             countPos +=1
@@ -764,61 +1152,65 @@ def GetTeamQaulyStats(Team1,Team2):
         #Get session qually time
         if T1Skipped == False:
             for w in x :
-                if w.Q3 != '':
-                    if w.Q3 == 'DNF':
-                        DriverTime = w.Q2
-                        Team1TimeList.append(DriverTime)
+                if w.Pos != 'NC' and w.Pos != 'RT':
+                    if w.Q3 != '':
+                        if w.Q3 == 'DNF':
+                            DriverTime = w.Q2
+                            Team1TimeList.append(DriverTime)
+                        else:
+                            DriverTime = w.Q3
+                            Team1TimeList.append(DriverTime)
+                    elif w.Q2 != '':
+                        if w.Q3 == 'DNF':
+                            DriverTime = w.Q1
+                            Team1TimeList.append(DriverTime)
+                        else:
+                            DriverTime = w.Q2
+                            Team1TimeList.append(DriverTime)
                     else:
-                        DriverTime = w.Q3
-                        Team1TimeList.append(DriverTime)
-                elif w.Q2 != '':
-                    if w.Q3 == 'DNF':
                         DriverTime = w.Q1
                         Team1TimeList.append(DriverTime)
-                    else:
-                        DriverTime = w.Q2
-                        Team1TimeList.append(DriverTime)
-                else:
-                    DriverTime = w.Q1
-                    Team1TimeList.append(DriverTime)
 
         if T2Skipped == False:
             for w in p :
-                if w.Q3 != '':
-                    if w.Q3 == 'DNF':
-                        DriverTime = w.Q2
-                        Team2TimeList.append(DriverTime)
+                if w.Pos != 'NC' and w.Pos != 'RT':
+                    if w.Q3 != '':
+                        if w.Q3 == 'DNF':
+                            DriverTime = w.Q2
+                            Team2TimeList.append(DriverTime)
+                        else:
+                            DriverTime = w.Q3
+                            Team2TimeList.append(DriverTime)
+                    elif w.Q2 != '':
+                        if w.Q3 == 'DNF':
+                            DriverTime = w.Q1
+                            Team2TimeList.append(DriverTime)
+                        else:
+                            DriverTime = w.Q2
+                            Team2TimeList.append(DriverTime)
                     else:
-                        DriverTime = w.Q3
-                        Team2TimeList.append(DriverTime)
-                elif w.Q2 != '':
-                    if w.Q3 == 'DNF':
                         DriverTime = w.Q1
                         Team2TimeList.append(DriverTime)
-                    else:
-                        DriverTime = w.Q2
-                        Team2TimeList.append(DriverTime)
-                else:
-                    DriverTime = w.Q1
-                    Team2TimeList.append(DriverTime)
 
         #get no. of q2 and q2 appreances
 
         if T1Skipped == False:
             for w in x :
-                if int(w.Pos) <= 10:
-                    T1Q3 += 1
-                    T1Q2 += 1
-                elif int(w.Pos) > 10 and int(w.Pos) <= 15:
-                    T1Q2 += 1
+                if w.Pos != 'NC' and w.Pos != 'RT':
+                    if int(w.Pos) <= 10:
+                        T1Q3 += 1
+                        T1Q2 += 1
+                    elif int(w.Pos) > 10 and int(w.Pos) <= 15:
+                        T1Q2 += 1
 
         if T2Skipped == False:
             for w in p :
-                if int(w.Pos) <= 10:
-                    T2Q3 += 1
-                    T2Q2 += 1
-                elif int(w.Pos) > 10 and int(w.Pos) <= 15:
-                    T2Q2 += 1
+                if w.Pos != 'NC' and w.Pos != 'RT':
+                    if int(w.Pos) <= 10:
+                        T2Q3 += 1
+                        T2Q2 += 1
+                    elif int(w.Pos) > 10 and int(w.Pos) <= 15:
+                        T2Q2 += 1
 
 
         T1Applicable = True
@@ -929,7 +1321,9 @@ def GetTeamRaceStats(Team1,Team2):
             GPList.append(t.GP)
 
     Team1PosList = []
+    Team1PosListWithNC = []
     Team2PosList = []
+    Team2PosListWithNC = []
 
     T1Skipped = False
     T2Skipped = False
@@ -947,19 +1341,21 @@ def GetTeamRaceStats(Team1,Team2):
 
         #Add drivers position gain/loss to list dnf on included
         for d1 in x:
-            if d1.Time == 'DNF' or d1.Time == 'DNS':
+            if d1.Time == 'DNF' or d1.Time == 'DNS' or d1.Pos == "DQ":
                 h = 'I have to use this cause python is drunk and cant pick up !='
             else:
                 StartPos = next((z.Pos for z in StartingGridList if z.No == d1.No and z.GP == y),'NotFound')
-                PositionsMade = int(StartPos)  - int(d1.Pos)
-                T1PositionGainList.append(PositionsMade)
+                if StartPos != 'NotFound':
+                    PositionsMade = int(StartPos)  - int(d1.Pos)
+                    T1PositionGainList.append(PositionsMade)
         for d2 in p:
-            if d2.Time == 'DNF' or d2.Time == 'DNS':
+            if d2.Time == 'DNF' or d2.Time == 'DNS' or d2.Pos == "DQ":
                 h = 'I have to use this cause python i drunk and cant pick up !='
             else:
                 StartPos = next((z.Pos for z in StartingGridList if z.No == d2.No and z.GP == y),'NotFound')
-                PositionsMade = int(StartPos) - int(d2.Pos)
-                T2PositionGainList.append(PositionsMade)
+                if StartPos != 'NotFound':
+                    PositionsMade = int(StartPos) - int(d2.Pos)
+                    T2PositionGainList.append(PositionsMade)
 
         #Total DNFS
         for d1 in x:
@@ -979,13 +1375,13 @@ def GetTeamRaceStats(Team1,Team2):
         # CHeck if driver has been classifed and depending on that add to one list or another
         if T1Skipped == False:
             for d1 in x:
-                if d1.Pos == "RT" or d1.Pos == "NC":
+                if d1.Pos == "RT" or d1.Pos == "NC" or d1.Pos == "DQ":
                     t1qualsession = [z for z in RaceList if z.GP == d1.GP]
                     countPos = 0
                     for s in t1qualsession:
                         if s.No == d1.No:
                             countPos +=1
-                            Team1PosList.append(countPos)
+                            Team1PosListWithNC.append(countPos)
                             Team1PointListWithNC.append(int(d1.Pts))
                             break
                         else:
@@ -993,18 +1389,19 @@ def GetTeamRaceStats(Team1,Team2):
 
                 else:
                     Team1PosList.append(int(d1.Pos))
+                    Team1PosListWithNC.append(int(d1.Pos))
                     Team1PointList.append(int(d1.Pts))
                     Team1PointListWithNC.append(int(d1.Pts))
 
         if T2Skipped == False:
             for d2 in p:
-                if d2.Pos == "RT" or d2.Pos == "NC":
+                if d2.Pos == "RT" or d2.Pos == "NC" or d2.Pos == "DQ":
                     t2qualsession = [z for z in RaceList if z.GP == d2.GP]
                     countPos = 0
                     for s in t2qualsession:
                         if s.No == d2.No:
                             countPos +=1
-                            Team2PosList.append(countPos)
+                            Team2PosListWithNC.append(countPos)
                             Team2PointListWithNC.append(int(d2.Pts))
                             break
                         else:
@@ -1012,6 +1409,7 @@ def GetTeamRaceStats(Team1,Team2):
                 
                 else:
                     Team2PosList.append(int(d2.Pos))
+                    Team2PosListWithNC.append(int(d2.Pos))
                     Team2PointList.append(int(d2.Pts))
                     Team2PointListWithNC.append(int(d2.Pts))
 
@@ -1074,6 +1472,9 @@ def GetTeamRaceStats(Team1,Team2):
     global D1AverageFinishs
     D1AverageFinishs = round(sum(Team1PosList)/len(Team1PosList),2)
 
+    global D1AverageFinishsWithNC
+    D1AverageFinishsWithNC = round(sum(Team1PosListWithNC)/len(Team1PosListWithNC),2)
+
     global D1BestFinish
     D1BestFinish = min(Team1PosList)
 
@@ -1109,6 +1510,9 @@ def GetTeamRaceStats(Team1,Team2):
     global D2AverageFinishs
     D2AverageFinishs = round(sum(Team2PosList)/len(Team2PosList),2)
 
+    global D2AverageFinishsWithNC
+    D2AverageFinishsWithNC = round(sum(Team2PosListWithNC)/len(Team2PosListWithNC),2)
+
     global D2BestFinish
     D2BestFinish = min(Team2PosList)
 
@@ -1133,68 +1537,12 @@ def GetTeamRaceStats(Team1,Team2):
 
 
 # ///////////////////////////////////////////////// Qauly Methods and data  //////////////////////////////////////////////////////////////////
-def LoadQauly():
-    directory = "C:\_Andile\Road To Software Development\Projects\F1 statistics\Data"
 
-    list_subfolders_with_names = sorted([x for x in os.scandir(directory) if x.is_dir()], key=os.path.getmtime)
-
-    QaulyList = QaulyClass.objects.all()
-
-    LastPos =  0
-
-    for x in list_subfolders_with_names:
-        index = x.name.index("_")
-        Foldername = x.name[index+1:]
-        with open(directory +'/' + x.name + '/'+ Foldername + '_Qaulifying_2021.csv') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for row in csv_reader:
-                if row[0] != 'Pos':
-                    LastPos = int(LastPos) + 1
-                    QualySession = QaulyClass()
-                    if row[0] == 'NC' or  row[0] == 'RT':
-                        QualySession.Pos = LastPos
-                    else:
-                        QualySession.Pos = row[0]
-
-                    QualySession.No = row[1]
-                    QualySession.Driver = row[2][:-4]
-                    QualySession.Car = row[3]
-                    QualySession.Q1 = row[4]
-                    QualySession.Q2 = row[5]
-                    QualySession.Q3 = row[6]
-                    QualySession.Laps = row[7]
-                    QualySession.GP = row[8]
-                    LastPos = QualySession.Pos
-
-                    foundobject = next((z for z in QaulyList if z.No == QualySession.No and z.GP == QualySession.GP),'NotFound')
-                    if foundobject == 'NotFound' :
-                        QualySession.save()
-
-
-def LoadDrivers():
-
-    driverList = DriverClass.objects.all()
-    path = 'C:\_Andile\Road To Software Development\Projects\F1 statistics\Data\DriverList2021.csv'
-    with open(path) as f:
-        reader = csv.reader(f,delimiter=',')
-        for row in reader:
-            if row[0] != 'Name':
-                myDrivers = DriverClass()
-                myDrivers.Name = row[0]
-                myDrivers.Surname = row[1] 
-                myDrivers.Abbr = row[2] 
-                myDrivers.No = row[3] 
-                myDrivers.Car = row[4]
-                myDrivers.img = 'Head2Head/Drivers/' + row[3] + '.png'
-                foundobject = next((z for z in driverList if z.No == myDrivers.No),'NotFound')
-                if foundobject == 'NotFound' :
-                    myDrivers.save()
 
 
 
 def GetTimeDiffernace(T1,T2):
 
-    print(T1 + '////' + T2)
     minute = T1[:T1.index(':')]
     second = T1[T1.index(':') + 1 :T1.index('.') ]
     milliseconds = T1[-3:]
@@ -1226,24 +1574,26 @@ def GetTeams(DriverList):
 def GetTeamTimeDiffernace(T1,T2):
     T1Combined = 0
     for x in T1:
-        minute = x[:x.index(':')]
-        second = x[x.index(':') + 1 :x.index('.') ]
-        milliseconds = x[x.index('.') +1:]
+        if x != 'DNF':
+            minute = x[:x.index(':')]
+            second = x[x.index(':') + 1 :x.index('.') ]
+            milliseconds = x[x.index('.') +1:]
 
-        Compiled = (int(minute)*60000) + (int(second)*1000) + int(milliseconds)
-        T1Combined = T1Combined + Compiled
+            Compiled = (int(minute)*60000) + (int(second)*1000) + int(milliseconds)
+            T1Combined = T1Combined + Compiled
 
 
     T2Combined = 0
     for x in T2:
-        minute = x[:x.index(':')]
-        second = x[x.index(':') + 1 :x.index('.') ]
-        milliseconds = x[x.index('.') +1:]
+        if x != 'DNF':
+            minute = x[:x.index(':')]
+            second = x[x.index(':') + 1 :x.index('.') ]
+            milliseconds = x[x.index('.') +1:]
 
-        Compiled = (int(minute)*60000) + (int(second)*1000) + int(milliseconds)
-        T2Combined = T2Combined + Compiled
+            Compiled = (int(minute)*60000) + (int(second)*1000) + int(milliseconds)
+            T2Combined = T2Combined + Compiled
 
-    Final = (T1Combined - T2Combined) / 1000
+    Final = ((T1Combined/ len(T1)) - (T2Combined/len(T2))) / 1000
 
     return Final
 
@@ -1279,151 +1629,520 @@ def GetTeamPoints(Team1,Team2):
 
     return PointsObjects
 
-def GetRaceResult():
-    directory = "C:\_Andile\Road To Software Development\Projects\F1 statistics\Data"
 
-    # list_subfolders_with_names = [f.name for f in os.scandir(directory) if f.is_dir()]
+
+#/////////////////////////////////////////////////////////// Get Race Data  Methods  ////////////////////////////////////////////////
+def LoadDrivers():
+
+    driverList = DriverClass.objects.all()
+    URL = 'https://www.formula1.com/en/results.html/2021/drivers.html'
+    page = requests.get(URL)
+    soup = BeautifulSoup(page.content, 'html.parser')
+
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
+
+
+    count = 0
+    columns = []
+    DriverObjectList = []
+
+    for currentrow in rows:
+        Standingcolumns =currentrow.find_all("td")
+
+        FullName = Standingcolumns[2].text.replace('\n', ' ').strip()
+        
+
+        #Get the link to the driver result page
+        LinkObject = Standingcolumns[2].find("a")
+        LinkToDriver = LinkObject.get("href") 
+        LinkToDriver = 'https://www.formula1.com' + LinkToDriver
+
+        #Get the link to the driver first race they participated in
+        page = requests.get(LinkToDriver)
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+        rows = racesTable.tbody.find_all("tr")  # contains 2 rows
+
+        columns =rows[0].find_all("td")
+        LinkObject = columns[1].find("a")
+        LinkToRace = LinkObject.get("href") 
+        LinkToRace = 'https://www.formula1.com' + LinkToRace
+
+        #Get the driver record and get thier number
+        page = requests.get(LinkToRace)
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+        rows = racesTable.tbody.find_all("tr")  # contains 2 rows
+
+        for currentrow in rows:
+            columns =currentrow.find_all("td")
+
+            RaceFullName = columns[3].text.replace('\n', ' ').strip()
+            if RaceFullName == FullName:
+                DriverNo = columns[2].text.replace('\n', ' ').strip()
+                break
+
+
+        space = FullName.index(' ')
+        Name = FullName[:space]
+        FullName = FullName.replace(Name + ' ','')
+
+        space = FullName.index(' ')
+        Surname = FullName[:space]
+        FullName = FullName.replace(Surname + ' ','')
+
+        Abbr = FullName
+
+        Driver = DriverClass()
+        Driver.No = DriverNo
+        Driver.Car = columns[4].text.replace('\n', ' ').strip()
+        Driver.Name = Name
+        Driver.Surname = Surname
+        Driver.Abbr = Abbr
+        DriverObjectList.append(Driver)
+        foundobject = next((z for z in driverList if z.No == Driver.No and z.Surname ==  Driver.Surname and z.Name ==  Driver.Name),'NotFound')
+        if foundobject == 'NotFound' :
+            Driver.save()
+
+
+def GetPractice(soup,Name,CurrentSession):
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
+
+    count = 0
+    columns = []
+    PracticeList = PracticeClass.objects.all()
     
-    list_subfolders_with_names = sorted([x for x in os.scandir(directory) if x.is_dir()], key=os.path.getmtime)
 
-    RacetList = ResultClass.objects.all()
+    for currentrow in rows:
+        columns =currentrow.find_all("td")
+        PracticeObject = PracticeClass()
+        PracticeObject.Pos = columns[1].text.replace('\n', ' ').strip()
+        PracticeObject.No = columns[2].text.replace('\n', ' ').strip()
+        PracticeObject.Driver = columns[3].text.replace('\n', ' ').strip()
+        PracticeObject.Car = columns[4].text.replace('\n', ' ').strip()
+        PracticeObject.Time = columns[5].text.replace('\n', ' ').strip()
+        PracticeObject.Gap = columns[6].text.replace('\n', ' ').strip()
+        PracticeObject.Laps = columns[7].text.replace('\n', ' ').strip()
+        PracticeObject.Session = CurrentSession
+        PracticeObject.GP = Name
 
-    RaceList = []
-    for x in list_subfolders_with_names:
-        index = x.name.index("_")
-        Foldername = str(x.name[index+1:])
-        with open(directory +'/' + x.name + '/'+ Foldername + '_RaceResults_2021.csv') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for row in csv_reader:
-                if row[0] != 'Pos':
-                    RaceSession = ResultClass()
-                    RaceSession.Pos = row[0]
-                    RaceSession.No = row[1]
-                    RaceSession.Driver = row[2][:-4]
-                    RaceSession.Car = row[3]
-                    RaceSession.Laps = row[4]
-                    RaceSession.Time = row[5]
-                    RaceSession.Pts = row[6]
-                    RaceSession.GP = row[7]
-                    foundobject = next((z for z in RacetList if z.No == RaceSession.No and z.GP == RaceSession.GP),'NotFound')
-                    if foundobject == 'NotFound' :
-                        RaceSession.save()
-                    # RaceList.append(RaceSession)
-    return RaceList
+        foundobject = next((z for z in PracticeList if z.No == PracticeObject.No and z.GP == PracticeObject.GP and z.Session == PracticeObject.Session ),'NotFound')
+        if foundobject == 'NotFound' :
+            PracticeObject.save()
+    #     PracticeList.append(PracticeObject)
 
+    # return PracticeList
 
-def GetFastLaps():
-    directory = "C:\_Andile\Road To Software Development\Projects\F1 statistics\Data"
+def GetQualy(soup,Name):
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
 
-    list_subfolders_with_names = sorted([x for x in os.scandir(directory) if x.is_dir()], key=os.path.getmtime)
+    count = 0
+    columns = []
+    QaulyList = []
+    QaulyList = StartingClass.objects.all()
 
-    fastestList = FastesLapClass.objects.all()
+    for currentrow in rows:
+        columns =currentrow.find_all("td")
+        QaulyObject = QaulyClass()
+        QaulyObject.Pos = columns[1].text.replace('\n', ' ').strip()
+        QaulyObject.No = columns[2].text.replace('\n', ' ').strip()
+        QaulyObject.Driver = columns[3].text.replace('\n', ' ').strip()
+        QaulyObject.Car = columns[4].text.replace('\n', ' ').strip()
+        QaulyObject.Q1 = columns[5].text.replace('\n', ' ').strip()
+        QaulyObject.Q2 = columns[6].text.replace('\n', ' ').strip()
+        QaulyObject.Q3 = columns[7].text.replace('\n', ' ').strip()
+        QaulyObject.Laps = columns[8].text.replace('\n', ' ').strip()
+        QaulyObject.GP = Name
 
-    RaceList = []
-    for x in list_subfolders_with_names:
-        index = x.name.index("_")
-        Foldername = x.name[index+1:]
-        with open(directory +'/' + x.name + '/'+ Foldername + '_FastestLap_2021.csv') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for row in csv_reader:
-                if row[0].isnumeric() == True:
-                    FastestLapObject = FastesLapClass()
-                    FastestLapObject.Pos = row[0]
-                    FastestLapObject.No = row[1]
-                    FastestLapObject.Driver = row[2][:-4]
-                    FastestLapObject.Car = row[3]
-                    FastestLapObject.Lap = row[4]
-                    FastestLapObject.TOD = row[5]
-                    FastestLapObject.Time = row[6]
-                    FastestLapObject.AVGSpeed = row[7]
-                    FastestLapObject.GP = row[8]
-                    foundobject = next((z for z in fastestList if z.No == FastestLapObject.No and z.GP == FastestLapObject.GP),'NotFound')
-                    if foundobject == 'NotFound' :
-                        FastestLapObject.save()
-    return RaceList
+        foundobject = next((z for z in QaulyList if z.No == QaulyObject.No and z.GP == QaulyObject.GP),'NotFound')
+        if foundobject == 'NotFound' :
+            QaulyObject.save()
 
+        # QaulyList.append(QaulyObject)
 
-def GetStartingGrid():
-    directory = "C:\_Andile\Road To Software Development\Projects\F1 statistics\Data"
+    # return QaulyList
 
-    list_subfolders_with_names = sorted([x for x in os.scandir(directory) if x.is_dir()], key=os.path.getmtime)
+def GetStart(soup,Name):
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
 
+    count = 0
+    columns = []
+    StartObjectList = []
     StartingList = StartingClass.objects.all()
 
-    RaceList = []
-    for x in list_subfolders_with_names:
-        index = x.name.index("_")
-        Foldername = x.name[index+1:]
-        with open(directory +'/' + x.name + '/'+ Foldername + '_StartingGrid_2021.csv') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            for row in csv_reader:
-                if row[0].isnumeric() == True:
-                    StartingGridObject = StartingClass()
-                    StartingGridObject.Pos = row[0]
-                    StartingGridObject.No = row[1]
-                    StartingGridObject.Driver = row[2][:-4]
-                    StartingGridObject.Car = row[3]
-                    StartingGridObject.Time = row[4]
-                    StartingGridObject.GP = row[5]
-                    foundobject = next((z for z in StartingList if z.No == StartingGridObject.No and z.GP == StartingGridObject.GP),'NotFound')
-                    if foundobject == 'NotFound' :
-                        StartingGridObject.save()
-                    #RaceList.append(StartingGridObject)
-    return RaceList
+    # NoteObject  = soup.find("p", attrs={"class": "note"})
+    # if NoteObject != None:
+    #     MyRetrunClass.Note = NoteObject.text
+
+    for currentrow in rows:
+        columns =currentrow.find_all("td")
+        startObject = StartingClass()
+        startObject.Pos = columns[1].text.replace('\n', ' ').strip()
+        startObject.No = columns[2].text.replace('\n', ' ').strip()
+        startObject.Driver = columns[3].text.replace('\n', ' ').strip()
+        startObject.Car = columns[4].text.replace('\n', ' ').strip()
+        startObject.Time = columns[5].text.replace('\n', ' ').strip()
+        startObject.GP = Name
+
+        foundobject = next((z for z in StartingList if z.No == startObject.No and z.GP == startObject.GP),'NotFound')
+        if foundobject == 'NotFound' :
+            startObject.save()
 
 
-#check if sprint weekend or not
-def Issprintweekend(name):
-    directory = 'C:\_Andile\Road To Software Development\Projects\F1 statistics\Data/' + name
+    #     StartObjectList.append(startObject)
 
-    ListofFiles = os.listdir(directory)
+    # MyRetrunClass.List = StartObjectList
+    # return MyRetrunClass
 
-    index = name.index("_")
-    newname = name[index+1:]
-    count = len(newname)
-    test = ListofFiles[0][count:]
-    found = [x for x in ListofFiles if '_SprintQaulifying_2021.csv' == x[count:]]
+def GetPit(soup,Name):
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
 
-    if len(found) == 0:
-        return False
-    else:
-        return True
+    count = 0
+    columns = []
+    PitObjectList = []
+    PitList = FastesLapClass.objects.all()
+
+    for currentrow in rows:
+        columns =currentrow.find_all("td")
+        Pitstop = PitstopClass()
+        Pitstop.Stops = columns[1].text.replace('\n', ' ').strip()
+        Pitstop.No = columns[2].text.replace('\n', ' ').strip()
+        Pitstop.Driver = columns[3].text.replace('\n', ' ').strip()
+        Pitstop.Car = columns[4].text.replace('\n', ' ').strip()
+        Pitstop.Lap = columns[5].text.replace('\n', ' ').strip()
+        Pitstop.TOD = columns[6].text.replace('\n', ' ').strip()
+        Pitstop.Time = columns[7].text.replace('\n', ' ').strip()
+        Pitstop.Total = columns[8].text.replace('\n', ' ').strip()
+        Pitstop.GP = Name
+        foundobject = next((z for z in PitList if z.No == Pitstop.No and z.GP == Pitstop.GP),'NotFound')
+        if foundobject == 'NotFound' :
+            Pitstop.save()
+
+    #     PitObjectList.append(Pitstop)
+
+    # return PitObjectList
+
+def GetFast(soup,Name):
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
+
+    count = 0
+    columns = []
+    FastLapObjectList = []
+    fastestList = FastesLapClass.objects.all()
+
+    for currentrow in rows:
+        columns =currentrow.find_all("td")
+        Fastlap = FastesLapClass()
+        Fastlap.Pos = columns[1].text.replace('\n', ' ').strip()
+        Fastlap.No = columns[2].text.replace('\n', ' ').strip()
+        Fastlap.Driver = columns[3].text.replace('\n', ' ').strip()
+        Fastlap.Car = columns[4].text.replace('\n', ' ').strip()
+        Fastlap.Lap = columns[5].text.replace('\n', ' ').strip()
+        Fastlap.TOD = columns[6].text.replace('\n', ' ').strip()
+        Fastlap.Time = columns[7].text.replace('\n', ' ').strip()
+        Fastlap.AVGSpeed = columns[8].text.replace('\n', ' ').strip()
+        Fastlap.GP = Name
+        foundobject = next((z for z in fastestList if z.No == Fastlap.No and z.GP == Fastlap.GP),'NotFound')
+        if foundobject == 'NotFound' :
+            Fastlap.save()
+
+        # FastLapObjectList.append(Fastlap)
+
+    # return FastLapObjectList
+
+def GetResult(soup,Name):
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
+
+    count = 0
+    columns = []
+    RaceObjectList = []
+    RacetList = ResultClass.objects.all()
+
+    for currentrow in rows:
+        columns =currentrow.find_all("td")
+        RaceResult = ResultClass()
+        RaceResult.Pos = columns[1].text.replace('\n', ' ').strip()
+        RaceResult.No = columns[2].text.replace('\n', ' ').strip()
+        RaceResult.Driver = columns[3].text.replace('\n', ' ').strip()
+        RaceResult.Car = columns[4].text.replace('\n', ' ').strip()
+        RaceResult.Laps = columns[5].text.replace('\n', ' ').strip()
+        RaceResult.Time = columns[6].text.replace('\n', ' ').strip()
+        RaceResult.Pts = columns[7].text.replace('\n', ' ').strip()
+        RaceResult.GP = Name
+        foundobject = next((z for z in RacetList if z.No == RaceResult.No and z.GP == RaceResult.GP),'NotFound')
+        if foundobject == 'NotFound' :
+            RaceResult.save()
+        # RaceObjectList.append(RaceResult)
+
+    # return RaceObjectList
+
+def GetSprint(soup,Name):
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
+
+    count = 0
+    columns = []
+    RaceObjectList = []
+    SprintList = SprintClass.objects.all()
+
+    for currentrow in rows:
+        columns =currentrow.find_all("td")
+        SprintResult = SprintClass()
+        SprintResult.Pos = columns[1].text.replace('\n', ' ').strip()
+        SprintResult.No = columns[2].text.replace('\n', ' ').strip()
+        SprintResult.Driver = columns[3].text.replace('\n', ' ').strip()
+        SprintResult.Car = columns[4].text.replace('\n', ' ').strip()
+        SprintResult.Laps = columns[5].text.replace('\n', ' ').strip()
+        SprintResult.Time = columns[6].text.replace('\n', ' ').strip()
+        SprintResult.Pts = columns[7].text.replace('\n', ' ').strip()
+        SprintResult.GP = Name
+        foundobject = next((z for z in SprintList if z.No == SprintResult.No and z.GP == SprintResult.GP),'NotFound')
+        if foundobject == 'NotFound' :
+            SprintResult.save()
+        # RaceObjectList.append(RaceResult)
+
+    # return RaceObjectList
 
 
-def GetSprintRaces():
+class RaceResultClass:
+    def __init__(self,GP = '',Date = '',Winner = '',Car = '',Laps = 0,Time= ''):
+        self.GP = GP
+        self.Date = Date
+        self.Winner = Winner
+        self.Car = Car
+        self.Laps = Laps
+        self.Time = Time
+#Get the most recent grand prix raced at
+def GetLastRace(soup):
+    racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
+    rows = racesTable.tbody.find_all("tr")  # contains 2 rows
 
-    sprintList = SprintClass.objects.all()
+    count = 0
+    columns = []
+    RaceObjectList = []
 
-    
-    directory = "C:\_Andile\Road To Software Development\Projects\F1 statistics\Data"
+    for currentrow in rows:
+        columns =currentrow.find_all("td")
+        RaceResult = RaceResultClass()
+        RaceResult.GP = columns[1].text.replace('\n', ' ').strip()
+        RaceResult.Date = columns[2].text.replace('\n', ' ').strip()
+        RaceResult.Winner = columns[3].text.replace('\n', ' ').strip()
+        RaceResult.Car = columns[4].text.replace('\n', ' ').strip()
+        RaceResult.Laps = columns[5].text.replace('\n', ' ').strip()
+        RaceResult.Time = columns[6].text.replace('\n', ' ').strip()
+        RaceObjectList.append(RaceResult)
 
-    list_subfolders_with_names = sorted([x for x in os.scandir(directory) if x.is_dir()], key=os.path.getmtime)
+    Lastelement = RaceObjectList[-1]
 
-    RaceList = []
-    for x in list_subfolders_with_names:
-        if Issprintweekend(x.name) == True:
-            index = x.name.index("_")
-            Foldername = x.name[index+1:]
-            with open(directory +'/' + x.name + '/'+ Foldername + '_SprintQaulifying_2021.csv') as csv_file:
-                csv_reader = csv.reader(csv_file, delimiter=',')
-                for row in csv_reader:
-                    if row[0] != 'Pos':
-                        RaceSession = SprintClass()
-                        RaceSession.Pos = row[0]
-                        RaceSession.No = row[1]
-                        RaceSession.Driver = row[2][:-4]
-                        RaceSession.Car = row[3]
-                        RaceSession.Laps = row[4]
-                        RaceSession.Time = row[5]
-                        RaceSession.Pts = row[6]
-                        RaceSession.GP = row[7]
+    return Lastelement.GP
 
-                        foundobject = next((z for z in sprintList if z.No == RaceSession.No and z.GP == RaceSession.GP),'NotFound')
-                        if foundobject == 'NotFound' :
-                            RaceSession.save()
+class LinkClass: 
+    def __init__(self, Url= '',Name =''): 
+        self.Url = Url 
+        self.Name = Name
 
-                       
-    return RaceList
 
-def Test(request):
-    return render(request,'Head2Head/loadData.html')
+def GetLinks():
+    URL = 'https://www.formula1.com/en/results.html/2021/races.html'
+    page = requests.get(URL)
+    soup = BeautifulSoup(page.content, 'html.parser')
+
+    AllRacesLinks = soup.find_all("a", attrs={"data-name": "meetingKey"})
+
+    FinalRaceLinkList = []
+    LastRace = GetLastRace(soup)
+
+    for x in AllRacesLinks:
+        Name = x.find("span", attrs={"class": "clip"})
+        GPName = Name.text
+        if GPName != 'All':
+            #Used to only get the lonks of grandprix we have raced at 
+            FinalRaceLink = LinkClass()
+            if GPName == LastRace:
+                FinalRaceLink.Url = 'https://www.formula1.com/' + x.get('href')
+                FinalRaceLink.Name = GPName
+                FinalRaceLinkList.append(FinalRaceLink)
+
+                break
+            else:
+                FinalRaceLink.Url = 'https://www.formula1.com/' + x.get('href')
+                FinalRaceLink.Name = GPName
+                FinalRaceLinkList.append(FinalRaceLink)
+
+    return FinalRaceLinkList
+
+def testIFsprintweekend(Link):
+    page = requests.get(Link)
+    soup = BeautifulSoup(page.content, 'html.parser')
+
+
+    nav = soup.find("ul", attrs={"class": "resultsarchive-side-nav"})
+    listofsessions = nav.find_all("li")
+    for session in listofsessions:
+        text = session.text.replace('\n', ' ').strip()
+        if text == "Sprint qualifying":
+            return True
+
+    return False
+
+ 
+
+def LoadRaceWeekendData():
+    LinkList = GetLinks()
+    for x in LinkList:
+        RaceName = x.Name
+        isSprintWeekend = testIFsprintweekend(x.Url)
+
+        print("---------------------------Staring with " + RaceName +" -------------------------------------------------")
+        newLink = x.Url
+        page = requests.get(x.Url)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        GetResult(soup,RaceName)
+        
+
+
+        print("---------------------------Done with Race-------------------------------------------------")
+
+
+        FastestLapLink = newLink.replace('race-result.html','fastest-laps.html')
+        page = requests.get(FastestLapLink)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        GetFast(soup,RaceName)
+
+
+        print("---------------------------Done with Fastest-------------------------------------------------")
+
+
+
+        PitstopLink = FastestLapLink.replace('fastest-laps.html','pit-stop-summary.html')
+        page = requests.get(PitstopLink)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        GetPit(soup,RaceName)
+
+
+
+
+        print("---------------------------Done with Pitstop-------------------------------------------------")
+
+
+        Note = ''
+        StartingLink = PitstopLink.replace('pit-stop-summary.html','starting-grid.html')
+        page = requests.get(StartingLink)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        GetStart(soup,RaceName)
+
+
+        print("---------------------------Done with Starting grid-------------------------------------------------")
+
+        
+        if isSprintWeekend == False:
+            QaulyLink = StartingLink.replace('starting-grid.html','qualifying.html')
+            page = requests.get(QaulyLink)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            GetQualy(soup,RaceName)
+            
+            
+
+
+
+            print("---------------------------Done with Qauly-------------------------------------------------")
+
+
+            PracticeLink = QaulyLink.replace('qualifying.html','practice-3.html')
+            page = requests.get(PracticeLink)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            GetPractice(soup,RaceName,'P3')
+
+
+
+            print("---------------------------Done with P3-------------------------------------------------")
+
+
+            PracticeLink = PracticeLink.replace('practice-3.html','practice-2.html')
+            page = requests.get(PracticeLink)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            GetPractice(soup,RaceName,'P2')
+
+            
+
+            print("---------------------------Done with P2 -------------------------------------------------")
+
+            soup = ''
+            PracticeLink = PracticeLink.replace('practice-2.html','practice-1.html')
+            page = requests.get(PracticeLink)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            GetPractice(soup,RaceName,'P1')
+            
+
+
+
+            print("---------------------------Done with P1-------------------------------------------------")
+        elif isSprintWeekend == True:
+            SprintQaulyLink = StartingLink.replace('starting-grid.html','sprint-qualifying-results.html')
+            page = requests.get(SprintQaulyLink)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            GetSprint(soup,RaceName)
+     
+
+            print("---------------------------Done with Sprint Qaulifying-------------------------------------------------")
+
+            
+            SprintQaulyLinkGrid = SprintQaulyLink.replace('sprint-qualifying-results.html','sprint-qualifying-grid.html')
+            page = requests.get(SprintQaulyLinkGrid)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            GetStart(soup,RaceName)
+
+      
+
+            print("---------------------------Done with Sprint Qaulifying Grid-------------------------------------------------")
+
+
+            PracticeLink = SprintQaulyLinkGrid.replace('sprint-qualifying-grid.html','practice-2.html')
+            page = requests.get(PracticeLink)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            Practice2List = GetPractice(soup,RaceName,'P2')
+
+         
+
+            print("---------------------------Done with P2 -------------------------------------------------")
+
+
+            QaulyLink = PracticeLink.replace('practice-2.html','qualifying.html')
+            page = requests.get(QaulyLink)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            GetQualy(soup,RaceName)
+            
+          
+
+
+
+            print("---------------------------Done with Qauly-------------------------------------------------")
+
+            soup = ''
+            PracticeLink = QaulyLink.replace('qualifying.html','practice-1.html')
+            page = requests.get(PracticeLink)
+            soup = BeautifulSoup(page.content, 'html.parser')
+            GetPractice(soup,RaceName,'P1')
+            
+
+            
+
+
+            print("---------------------------Done with P1-------------------------------------------------")
+
+
+
+
+    print("---------------------------Done with everything-------------------------------------------------")
+
+
+

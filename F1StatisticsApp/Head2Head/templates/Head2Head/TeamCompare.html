@@ -5,9 +5,17 @@
 <style>
 
 
+
     .Car{
-width: 320px;
+      width: 250px;
     }
+
+    .pic{
+      max-width: 150px;
+    }
+
+
+
     
 </style>
 <div style="text-align: center;">
@@ -46,10 +54,23 @@ width: 320px;
                 <table class="table table-striped">
                     <thead>
                       <tr>
-                        <th scope="col"> <img class="Car" src="{% static 'Head2Head/Teams/' %}{{stats.t1}}.png" alt="My image"><br> {{stats.t1}}
-                        </th>
-                        <th scope="col"><img style="height: 300px;" src="{% static 'Head2Head/Drivers/vs.png' %}" alt="My image"> </th>
-                        <th scope="col" ><img class="Car" src="{% static 'Head2Head/Teams/' %}{{stats.t2}}.png" alt="My image"> <br>{{stats.t2}}</th>
+                        {% if stats.t1 %} 
+                          <th scope="col" style="font-size: 30px;"> <img class = "Car" src="{% static 'Head2Head/Teams/' %}{{stats.t1}}.png" alt="Team 1 Image"><br> {{stats.t1}}
+                          </th>
+                        {% else %}
+                          <th scope="col" style="font-size: 30px;"> <img class = "Car"  src="{% static 'Head2Head/Teams/' %}default.png" alt="Default Image"><br> 
+                          </th>
+                        {% endif %}
+                        
+                        <th scope="col"><img class = "pic" src="{% static 'Head2Head/Drivers/' %}vs.png" alt="My image"> </th>
+  
+                        {% if stats.t2 %}
+                          <th scope="col" style="font-size: 30px;"> <img class = "Car" src="{% static 'Head2Head/Teams/' %}{{stats.t2}}.png" alt="Team 2 Image"><br> {{stats.t2}}
+                          </th>
+                        {% else %}
+                          <th scope="col" style="font-size: 30px;"> <img class = "Car" style="width: 200px;" src="{% static 'Head2Head/Teams/' %}default.png" alt="Default Image"><br> 
+                          </th>
+                        {% endif %}
                       </tr>
                     </thead>
                     <tbody>
@@ -92,7 +113,7 @@ width: 320px;
                      <tr style="font-size: 30px;">
         
                          <td colspan="3" >Average Qualifying Gap
-                             <br> <strong style="font-size: 15px; font-weight: bold;">If negative driver on left is ahead</strong>
+                             <br> <strong style="font-size: 15px; font-weight: bold;">If negative team on left is ahead</strong>
                          </td>
         
                      </tr>
@@ -128,10 +149,23 @@ width: 320px;
           <table class="table table-striped">
             <thead>
               <tr>
-                <th scope="col"> <img class="Car" src="{% static 'Head2Head/Teams/' %}{{stats.t1}}.png" alt="My image"><br> {{stats.t1}}
-                </th>
-                <th scope="col"><img style="height: 300px;" src="{% static 'Head2Head/Drivers/vs.png' %}" alt="My image"> </th>
-                <th scope="col" ><img class="Car" src="{% static 'Head2Head/Teams/' %}{{stats.t2}}.png" alt="My image"> <br>{{stats.t2}}</th>
+                {% if stats.t1 %} 
+                  <th scope="col" style="font-size: 30px;"> <img class = "Car" src="{% static 'Head2Head/Teams/' %}{{stats.t1}}.png" alt="Team 1 Image"><br> {{stats.t1}}
+                  </th>
+                {% else %}
+                  <th scope="col" style="font-size: 30px;"> <img class = "Car"  src="{% static 'Head2Head/Teams/' %}default.png" alt="Default Image"><br> 
+                  </th>
+                {% endif %}
+                
+                <th scope="col"><img class = "pic" src="{% static 'Head2Head/Drivers/' %}vs.png" alt="My image"> </th>
+
+                {% if stats.t2 %}
+                  <th scope="col" style="font-size: 30px;"> <img class = "Car" src="{% static 'Head2Head/Teams/' %}{{stats.t2}}.png" alt="Team 2 Image"><br> {{stats.t2}}
+                  </th>
+                {% else %}
+                  <th scope="col" style="font-size: 30px;"> <img class = "Car" style="width: 200px;" src="{% static 'Head2Head/Teams/' %}default.png" alt="Default Image"><br> 
+                  </th>
+                {% endif %}
               </tr>
             </thead>
               <tbody>
@@ -179,6 +213,12 @@ width: 320px;
                    <td>Average Finish</td>
                    <td>{{Racestats.d2avgfin}}</td>
                </tr>
+
+               <tr style="font-size: 30px;">
+                <td>{{Racestats.d1avgfinWithNC}}</td>
+                 <td>Average Finish With NC</td>
+                 <td>{{Racestats.d2avgfinWithNC}}</td>
+             </tr>
 
                <tr style="font-size: 30px;">
                   <td>{{Racestats.d1dnf}}</td>

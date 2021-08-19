@@ -16,10 +16,12 @@
         </thead>
         <tbody>
            
+          {% load static %}
+
          {% for i in myDrivers %}
          <tr style="font-size: 30px;">
-            {% load static %}
-            <td><img src="{% static '' %}{{i.img}}" alt="My image"></td>
+            
+            <td><img src="{% static 'Head2Head/Drivers/' %}{{i.No}}.png" alt="My image"></td>
              <td>{{i.Name}}</td>
              <td>{{i.Surname}}</td>
              <td>{{i.No}}</td>

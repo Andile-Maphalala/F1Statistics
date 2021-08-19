@@ -9,3 +9,11 @@ class Driverform(forms.Form):
 class Teamform(forms.Form):
     team1 = forms.CharField(label='Enter first Team', max_length=100)
     team2 = forms.CharField(label='Enter second Team', max_length=100)
+
+class DeleteSpecificForm(forms.Form):
+    gp = forms.CharField(label='Enter GrandPrix', max_length=100)
+    sess = forms.CharField(label='Enter GrandPrix', max_length=100)
+    pw = forms.CharField(label='Enter Password', max_length=100)
+
+class CheckForm(forms.Form):
+    pw = forms.CharField(label='Enter Password', max_length=100)

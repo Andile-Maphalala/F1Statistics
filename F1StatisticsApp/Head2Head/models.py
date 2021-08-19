@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class QaulyClass(models.Model):
-    Pos = models.IntegerField(default=0)
+    Pos = models.CharField(max_length=200)
     No = models.CharField(max_length=200)
     Driver = models.CharField(max_length=200)
     Car = models.CharField(max_length=200)
@@ -59,4 +59,28 @@ class SprintClass(models.Model):
     Laps = models.IntegerField(default=0)
     Time = models.CharField(max_length=200)
     Pts = models.IntegerField(default=0)
+    GP = models.CharField(max_length=200)
+
+
+
+class PracticeClass(models.Model):
+    Pos = models.CharField(max_length=200)
+    No = models.CharField(max_length=200)
+    Driver = models.CharField(max_length=200)
+    Car = models.CharField(max_length=200)
+    Laps = models.IntegerField(default=0)
+    Session = models.CharField(max_length=2)
+    Time = models.CharField(max_length=200)
+    GP = models.CharField(max_length=200)
+
+
+class PitstopClass(models.Model):
+    Stops = models.IntegerField(default=0)
+    No = models.CharField(max_length=200)
+    Driver = models.CharField(max_length=200)
+    Total = models.CharField(max_length=200)
+    Time = models.CharField(max_length=200)
+    TOD = models.CharField(max_length=200)
+    Car = models.CharField(max_length=200)
+    Lap = models.IntegerField(default=0)
     GP = models.CharField(max_length=200)

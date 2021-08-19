@@ -1,0 +1,125 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+
+	body {
+  background: #191828;
+  color: #efedef;
+  padding: 10px; 
+  }
+</style>
+
+    <canvas id="line-chart" height="100"></canvas>
+  
+
+  <script>
+
+var endpoint = 'api/'
+$.ajax({
+    
+    method : "GET",
+    url    : endpoint,
+    
+    success: function(data){
+
+
+        const totalDuration = 10000;
+        const delayBetweenPoints = totalDuration / data.items.length;
+        const previousY = (ctx) => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(100) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
+        console.log(previousY)
+        const animation = {
+        
+        };
+        
+        //////////////
+        new Chart(document.getElementById("line-chart"), {
+        type: 'line',
+        data: { labels   : data.labels,
+                datasets : data.items
+        },
+            options : {
+                animation : {
+
+                    x: {
+                        type: 'number',
+                        easing: 'linear',
+                        duration: delayBetweenPoints,
+                        from: NaN, // the point is initially skipped
+                        delay(ctx) {
+                        if (ctx.type !== 'data' || ctx.xStarted) {
+                            return 0;
+                        }
+                        ctx.xStarted = true;
+                        return ctx.index * delayBetweenPoints;
+                        }
+                    },
+                    y: {
+                        type: 'number',
+                        easing: 'linear',
+                        duration: delayBetweenPoints,
+                        from: previousY,
+                        delay(ctx) {
+                        if (ctx.type !== 'data' || ctx.yStarted) {
+                            return 0;
+                        }
+                        ctx.yStarted = true;
+                        return ctx.index * delayBetweenPoints;
+                        }
+                    }
+
+                },
+                elements: {
+                    line: {
+                        tension: 0 // disables bezier curves
+                    }
+                },
+                title : {
+                    display : true,
+                    text    : data.title 
+                }
+            },
+            scales: {
+      x: {
+        type: 'linear'
+      }
+    }
+        } ); 
+    },
+    
+    error: function(error_data){
+        console.log("error")
+        console.log(error_data) } } )
+
+
+
+
+    
+    </script>
+    
+
+    <!-- options : {
+        title : {
+            display : true,
+            text    : data.title 
+        }
+    } -->
+    <!-- const labels = Utils.months({count: 7});
+    const data = {
+  labels: labels,
+  datasets: [
+      {
+      label: 'Dataset 1',
+      data: Utils.numbers(NUMBER_CFG),
+      borderColor: Utils.CHART_COLORS.red,
+      backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
+      yAxisID: 'y',
+      },
+      {
+      label: 'Dataset 2',
+      data: Utils.numbers(NUMBER_CFG),
+      borderColor: Utils.CHART_COLORS.blue,
+      backgroundColor: Utils.transparentize(Utils.CHART_COLORS.blue, 0.5),
+      yAxisID: 'y1',
+      }
+  ]
+}; -->

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
+import django_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(5j8*!0&n&6b!#2_)$5ho$mfj41soywyna1&z^=y&4v$&gkj^5'
+# SECRET_KEY = 'django-insecure-(5j8*!0&n&6b!#2_)$5ho$mfj41soywyna1&z^=y&4v$&gkj^5'
 
+SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.environ['DEBUG_VALUE'] == 'True'
+ 
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['myf1stats.herokuapp.com']
 
 
 # Application definition
@@ -54,10 +57,20 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'F1StatisticsApp.urls'
 
+
+SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
+
+
+TEMPLATE_DIRS = (
+    os.path.join(SETTINGS_PATH, 'templates'),
+)
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+         'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,9 +134,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
+STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+django_heroku.settings(locals())
