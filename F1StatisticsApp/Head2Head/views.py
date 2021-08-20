@@ -76,16 +76,12 @@ D2RaceRecord = 0
 
 #/////////////////////////////////////////////  Admin Tasks  ///////////////////////////////////////////////////////////////////
 
+#Admin Page
 def Load(request):
-    # debug_flag = settings.DEBUG
-    # PopupObject = {
-    #     'value': 'True'
-    # }
-    # dataJSON = dumps(PopupObject)
-    # dataJSON = True
-    # context = {'data':dataJSON}]
+  
 
     if request.user.is_authenticated:
+        #Get List of objects in database
         ListOFprac = PracticeClass.objects.all()
         ListOFqualy = QaulyClass.objects.all()
         ListOFspr = SprintClass.objects.all()
@@ -94,6 +90,7 @@ def Load(request):
         ListOFfast = FastesLapClass.objects.all()
         ListOFres= ResultClass.objects.all()
 
+    #Get list of table names
         ListOFSessions = []
         ListOFSessions.append(PracticeClass.objects.model._meta.db_table)
         ListOFSessions.append(QaulyClass.objects.model._meta.db_table)
@@ -104,10 +101,10 @@ def Load(request):
         ListOFSessions.append(ResultClass.objects.model._meta.db_table)
         ListOFSessions.append("ALL")
 
-        ListofGrandPrix = GetLabels()
+        ListofGrandPrix = GetListOfGrandPrix()
         ListofGrandPrix.append("ALL")
 
-
+        #Get number of objects i tables
         countobject = {
             'qualycount' : len(ListOFqualy), 'praccount' : len(ListOFprac), 'sprcount' : len(ListOFspr),
             'startcount' : len(ListOFstart), 'pitcount' : len(ListOFpit),'fastcount' : len(ListOFfast),
@@ -188,32 +185,9 @@ def DelSpeciFiedMethod(GrandPrix,Session):
             FastesLapClass.objects.all().delete()
         if Session == ResultClass.objects.model._meta.db_table:
             ResultClass.objects.all().delete()
-    # else :
-    #     if Session == PracticeClass.objects.model._meta.db_table:
-    #         PracticeClass.objects.filter(GP = GrandPrix).delete()
-    #     if Session == QaulyClass.objects.model._meta.db_table:
-    #         QaulyClass.objects.filter(GP = GrandPrix).delete()
-    #     if Session == SprintClass.objects.model._meta.db_table:
-    #         SprintClass.objects.filter(GP = GrandPrix).delete()
-    #     if Session == StartingClass.objects.model._meta.db_table:
-    #         StartingClass.objects.filter(GP = GrandPrix).delete()
-    #     if Session == PitstopClass.objects.model._meta.db_table:
-    #         PitstopClass.objects.filter(GP = GrandPrix).delete()
-    #     if Session == FastesLapClass.objects.model._meta.db_table:
-    #         FastesLapClass.objects.filter(GP = GrandPrix).delete()
-    #     if Session == ResultClass.objects.model._meta.db_table:
-    #         ResultClass.objects.filter(GP = GrandPrix).delete()
     
 
-
-
-
-
-
-
-
-
-
+#/////////////////////////////////////////////  Graphs  ///////////////////////////////////////////////////////////////////
 class LineGraphClass: 
     def __init__(self, Label= '', Data = [],Color =''): 
         self.Label = Label 
@@ -227,18 +201,13 @@ class LineGraphClass:
     def to_dict(self):
       return {"data": self.Data, "label": self.Label, "borderColor": self.Color, "fill": False}
 
-#/////////////////////////////////////////////  Graphs  ///////////////////////////////////////////////////////////////////
+
 def Graphs(request):
-
-    # listofLabels = GetLabels()
-    # ListofObjects = GetObjects(listofLabels)
-
-    # context = {'myObjects':ListofObjects,'myLabels' : listofLabels}
     return render(request,'Head2Head/Graph.html')
 
 def GetGraphData(request, *args, **kwargs):
-    listofLabels = GetLabels()
-    ListofObjects = GetObjects(listofLabels)
+    listofLabels = GetListOfGrandPrix()
+    ListofObjects = GetPointGraphObjects(listofLabels)
     
     # jsonLabels = json.dumps(listofLabels)
     results = [obj.to_dict() for obj in ListofObjects]
@@ -252,7 +221,7 @@ def GetGraphData(request, *args, **kwargs):
     return JsonResponse(data, safe=False)
 
 #////////////////////////////////////////////  Graph data  ///////////////////////////////////////////////////////////////////
-def GetLabels():
+def GetListOfGrandPrix():
     QaulyList = QaulyClass.objects.all()
     GPList = []
     for t in QaulyList:
@@ -261,14 +230,14 @@ def GetLabels():
         else:
             GPList.append(t.GP)
     return GPList
-
-def GetObjects(GPList):
+#get Data for total point graph
+def GetPointGraphObjects(GPList):
     driverList = DriverClass.objects.all()
     RaceList = ResultClass.objects.all()
     SrpintList = SprintClass.objects.all()
     Objectlist = []
 
-
+    #Get points
     for x in driverList:
         DriverTotalPoints = 0
         DriverTotalPointList = []
@@ -286,7 +255,7 @@ def GetObjects(GPList):
                 DriverTotalPointList.append(DriverTotalPoints)
 
             
-
+    
         if x.Car.upper() == "RED BULL RACING HONDA":
             LineColor = '#0600ef'
         elif x.Car.upper() == "MERCEDES":
@@ -323,7 +292,7 @@ def getQualyGaps():
     class QualyGraph(object):
         pass
 
-    GPList = GetLabels()
+    GPList = GetListOfGrandPrix()
     AllDriversWithTime = []
     for x in DriverList:
         print(x.Name)
@@ -379,16 +348,16 @@ def getQualyGaps():
 
 
 
-
-
 #/////////////////////////////////////////////  F1 statistsics  ///////////////////////////////////////////////////////////////////
-def index(request):
+# def index(request):
     
-    return render(request,'Head2Head/index.html')
+#     return render(request,'Head2Head/index.html')
 
+#To hide the real admin site
 def FakeAdmin(request):
     return render(request,'Head2Head/Fake.html')
 
+#list of drivers
 def drivers(request):
     DriverObjetList = DriverClass.objects.all()
     context = {'myDrivers':DriverObjetList}
@@ -407,17 +376,18 @@ def comparedrivers(request):
             driv2 = form.cleaned_data['driver2']
             
     
-
+            #get stats
             GetQaulyDriverStats(driv1,driv2)
             GetRaceDriverStats(driv1,driv2)
             
-
+            #list of drivers
             DriverObjetList = DriverClass.objects.all().order_by('Name')
+
 
             searchd1 = [x for x in DriverObjetList if x.No == driv1]
             searchd2 = [x for x in DriverObjetList if x.No == driv2]
 
-
+            #assign values
             Qualyobject = {'d1qualy': D1QaulyRecord, 'd2qualy': D2QaulyRecord,
                             'd1best': Driver1Best, 'd2best': Driver2Best,
                             'd1worst': Driver1Worst, 'd2worst': Driver2Worst,
@@ -474,16 +444,17 @@ def compareteams(request):
             team2 = form.cleaned_data['team2']
             
             
-
+            #get stats
             GetTeamQaulyStats(team1,team2)
             GetTeamRaceStats(team1,team2)
            
-
+            #list of teams
             DriverObjetList = DriverClass.objects.all().order_by('Car')
 
             # searchd1 = [x for x in DriverObjetList if x.No == tea]
             # searchd2 = [x for x in DriverObjetList if x.No == driv2]
 
+            #assign values
             Driverobject = {'d1best': Driver1Best, 'd2best': Driver2Best,
                             'd1worst': Driver1Worst, 'd2worst': Driver2Worst,
                             'd1avg': Driver1Avg, 'd2avg': Driver2Avg,
@@ -534,8 +505,6 @@ def compareteams(request):
 def GetQaulyDriverStats(Driver1,Driver2):
     QaulyList = QaulyClass.objects.all()
 
-    # Driver1 = 'Pierre Gasly'
-    # Driver2 = 'Lando Norris'
 
     # Get all the qualy sessions the drivers have participated in
     Driver1Sessions = [x for x in QaulyList if x.No == Driver1]
@@ -592,6 +561,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
         d1qualsession = []
         d2qualsession = []
 
+        #check if driver finished the eace and add pos to list
         if D1Skipped == False:
             if x.Pos == "RT" or x.Pos == "NC":
                 d1qualsession = [z for z in QaulyList if z.GP == x.GP]
@@ -606,6 +576,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
             else:
                 Driver1PosList.append(int(x.Pos))
         
+        #check if driver finished the eace and add pos to list
         if D2Skipped == False:
             if p.Pos == "RT" or p.Pos == "NC":
                 d2qualsession = [z for z in QaulyList if z.GP == p.GP]
@@ -620,6 +591,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
             else:
                 Driver2PosList.append(int(p.Pos))
 
+            #Get driver best time from highest session
         if D1Skipped == False:
             if x.Q3 != '':
                 if x.Q3 == 'DNF':
@@ -637,6 +609,8 @@ def GetQaulyDriverStats(Driver1,Driver2):
 
             else:
                 Driver1Time = x.Q1
+        
+        #Get driver best time from highest session
         if D2Skipped == False:
             if p.Q3 != '':
                 if p.Q3 == 'DNF':
@@ -655,6 +629,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
             else:
                 Driver2Time = p.Q1
 
+        #count qualy appearnaces
         if D1Skipped == False:
             if x.Pos != 'NC' and x.Pos != 'RT':
                 if int(x.Pos) <= 10:
@@ -671,7 +646,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
                     D2Q2 += 1
         
     
-
+        #count time driver finished ahead of other
         if D1Skipped == False and D2Skipped == False:
             if x.Pos == "RT" or x.Pos == "NC":
                 if p.Pos == "RT" or p.Pos == "NC": 
@@ -691,7 +666,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
                 elif int(x.Pos) > int(p.Pos):
                     D2Record += 1
 
-
+        #check if both drivers have set a proper time.
         if Driver1Time == 'DNF' or Driver1Time == 'RT' or Driver2Time == 'DNF' or Driver2Time == 'RT' or Driver1Time == '' or Driver2Time == '' or x.Pos == 'NC' or p.Pos == 'NC':
             D1Skipped = False
             D2Skipped = False
@@ -1161,7 +1136,7 @@ def GetTeamQaulyStats(Team1,Team2):
                 countDriverPos += 1
 
 
-        #Get session qually time
+        #Get both driver best time from highest session
         if T1Skipped == False:
             for w in x :
                 if w.Pos != 'NC' and w.Pos != 'RT':
@@ -1182,7 +1157,7 @@ def GetTeamQaulyStats(Team1,Team2):
                     else:
                         DriverTime = w.Q1
                         Team1TimeList.append(DriverTime)
-
+    #Get both driver best time from highest session
         if T2Skipped == False:
             for w in p :
                 if w.Pos != 'NC' and w.Pos != 'RT':
@@ -1205,7 +1180,6 @@ def GetTeamQaulyStats(Team1,Team2):
                         Team2TimeList.append(DriverTime)
 
         #get no. of q2 and q2 appreances
-
         if T1Skipped == False:
             for w in x :
                 if w.Pos != 'NC' and w.Pos != 'RT':
@@ -1224,7 +1198,7 @@ def GetTeamQaulyStats(Team1,Team2):
                     elif int(w.Pos) > 10 and int(w.Pos) <= 15:
                         T2Q2 += 1
 
-
+        #check if atleast 1 driver from both teams has an applicable time set
         T1Applicable = True
         T2Applicable = True
         for z in Team1TimeList:
@@ -1552,7 +1526,7 @@ def GetTeamRaceStats(Team1,Team2):
 
 
 
-
+# get differance between 2 drivers time
 def GetTimeDiffernace(T1,T2):
 
     minute = T1[:T1.index(':')]
@@ -1571,7 +1545,7 @@ def GetTimeDiffernace(T1,T2):
 
     return Final
 
-
+#list of teams 
 def GetTeams(DriverList):
     TeamList = []
     for t in DriverList:
@@ -1582,7 +1556,7 @@ def GetTeams(DriverList):
     return TeamList
 
 
-
+#get differance between 2 teams time
 def GetTeamTimeDiffernace(T1,T2):
     T1Combined = 0
     for x in T1:
@@ -1613,6 +1587,7 @@ def GetTeamTimeDiffernace(T1,T2):
 
 #////////////////////////////////////// Race Methods and data //////////////////////////////////////////////////////////  
 
+#Get total points for teams
 def GetTeamPoints(Team1,Team2):
     URL = 'https://www.formula1.com/en/results.html/2021/team.html'
     page = requests.get(URL)
@@ -1962,7 +1937,7 @@ class LinkClass:
         self.Url = Url 
         self.Name = Name
 
-
+#Get All the links to the different grand prix
 def GetLinks():
     URL = 'https://www.formula1.com/en/results.html/2021/races.html'
     page = requests.get(URL)
@@ -1992,6 +1967,7 @@ def GetLinks():
 
     return FinalRaceLinkList
 
+#checl whether it is a sprint weekend or not 
 def testIFsprintweekend(Link):
     page = requests.get(Link)
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -2005,9 +1981,7 @@ def testIFsprintweekend(Link):
             return True
 
     return False
-
- 
-
+#gets all new race data 
 def LoadRaceWeekendData():
     LinkList = GetLinks()
     for x in LinkList:

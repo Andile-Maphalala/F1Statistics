@@ -5,8 +5,8 @@ from Head2Head.views import GetGraphData
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('index', views.index, name='index'),
-    path('x', views.drivers),
+    # path('index', views.index, name='index'),
+    # path('x', views.drivers),
     path('', views.comparedrivers),
     path('drivers', views.comparedrivers,name='drivers'),
     path('teams',views.compareteams),
