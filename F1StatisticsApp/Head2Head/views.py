@@ -85,32 +85,44 @@ def Load(request):
     # dataJSON = True
     # context = {'data':dataJSON}]
 
-    ListOFprac = PracticeClass.objects.all()
-    ListOFqualy = QaulyClass.objects.all()
-    ListOFspr = SprintClass.objects.all()
-    ListOFstart = StartingClass.objects.all()
-    ListOFpit = PitstopClass.objects.all()
-    ListOFfast = FastesLapClass.objects.all()
-    ListOFres= ResultClass.objects.all()
+    if request.user.is_authenticated:
+        ListOFprac = PracticeClass.objects.all()
+        ListOFqualy = QaulyClass.objects.all()
+        ListOFspr = SprintClass.objects.all()
+        ListOFstart = StartingClass.objects.all()
+        ListOFpit = PitstopClass.objects.all()
+        ListOFfast = FastesLapClass.objects.all()
+        ListOFres= ResultClass.objects.all()
 
-    ListOFSessions = []
-    ListOFSessions.append(PracticeClass.objects.model._meta.db_table)
-    ListOFSessions.append(QaulyClass.objects.model._meta.db_table)
-    ListOFSessions.append(SprintClass.objects.model._meta.db_table)
-    ListOFSessions.append(StartingClass.objects.model._meta.db_table)
-    ListOFSessions.append(PitstopClass.objects.model._meta.db_table)
-    ListOFSessions.append(FastesLapClass.objects.model._meta.db_table)
-    ListOFSessions.append(ResultClass.objects.model._meta.db_table)
-    ListOFSessions.append("ALL")
+        ListOFSessions = []
+        ListOFSessions.append(PracticeClass.objects.model._meta.db_table)
+        ListOFSessions.append(QaulyClass.objects.model._meta.db_table)
+        ListOFSessions.append(SprintClass.objects.model._meta.db_table)
+        ListOFSessions.append(StartingClass.objects.model._meta.db_table)
+        ListOFSessions.append(PitstopClass.objects.model._meta.db_table)
+        ListOFSessions.append(FastesLapClass.objects.model._meta.db_table)
+        ListOFSessions.append(ResultClass.objects.model._meta.db_table)
+        ListOFSessions.append("ALL")
 
-    ListofGrandPrix = GetLabels()
-    ListofGrandPrix.append("ALL")
-    value = request.GET.get('value','')
-    context = {'data':value, "gplist" : ListofGrandPrix, "sesslist":ListOFSessions,'prac':ListOFprac, "qualy" : ListOFqualy, "sprint":ListOFspr,
-     "start":ListOFstart,'pit':ListOFpit, "fast" : ListOFfast, "res":ListOFres,
-    
-    }
-    return render(request,'Head2Head/LoadData.html',context)
+        ListofGrandPrix = GetLabels()
+        ListofGrandPrix.append("ALL")
+
+
+        countobject = {
+            'qualycount' : len(ListOFqualy), 'praccount' : len(ListOFprac), 'sprcount' : len(ListOFspr),
+            'startcount' : len(ListOFstart), 'pitcount' : len(ListOFpit),'fastcount' : len(ListOFfast),
+            'rescount' : len(ListOFres)
+
+        }
+
+        value = request.GET.get('value','')
+        context = {'data':value, "gplist" : ListofGrandPrix, "sesslist":ListOFSessions,'prac':ListOFprac, "qualy" : ListOFqualy, "sprint":ListOFspr,
+        "start":ListOFstart,'pit':ListOFpit, "fast" : ListOFfast, "res":ListOFres, 'countobject' : countobject,
+        
+        }
+        return render(request,'Head2Head/LoadData.html',context)
+    else:
+        return HttpResponseRedirect('drivers')
 
 def LoadAllNewData(request):
     if request.method == 'POST':
@@ -371,7 +383,7 @@ def getQualyGaps():
 
 #/////////////////////////////////////////////  F1 statistsics  ///////////////////////////////////////////////////////////////////
 def index(request):
-    testIFsprintweekend("https://www.formula1.com/en/results.html/2021/races/1072/great-britain/race-result.html")
+    
     return render(request,'Head2Head/index.html')
 
 def FakeAdmin(request):
@@ -1744,7 +1756,7 @@ def GetQualy(soup,Name):
     count = 0
     columns = []
     QaulyList = []
-    QaulyList = StartingClass.objects.all()
+    QaulyList = QaulyClass.objects.all()
 
     for currentrow in rows:
         columns =currentrow.find_all("td")
@@ -1807,7 +1819,7 @@ def GetPit(soup,Name):
     count = 0
     columns = []
     PitObjectList = []
-    PitList = FastesLapClass.objects.all()
+    PitList = PitstopClass.objects.all()
 
     for currentrow in rows:
         columns =currentrow.find_all("td")

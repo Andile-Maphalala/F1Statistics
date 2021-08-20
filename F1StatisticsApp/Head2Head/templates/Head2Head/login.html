@@ -1,0 +1,89 @@
+<style>
+    body {
+  background: #191828;
+  color: #efedef;
+  font-family: "Roboto", Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1.6em;
+  margin: 0;
+  padding: 100px; }
+h1 {
+  font-size: 40px;
+  line-height: 0.8em;
+  color: rgba(255,255,255,0.2);}
+/* a {
+    background: #fd264f;
+    color: #fff;
+    display: block;
+    font-size: 12px;
+    line-height: 1em;
+    margin: 0;
+    padding: 5px 110px;
+    position: fixed;
+    top: 20px;
+    right: -100px;
+    text-align: center;
+    text-decoration: none;
+    transform: rotate(45deg);
+} */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none; }
+
+
+  select {
+
+width:250px;
+height:40px;
+color: white;
+background:#333;
+
+}
+
+option {
+padding:0 30px 0 10px;
+min-height:40px;
+display:flex;
+align-items:center;
+background:#333;
+border-top:#222 solid 1px;
+position:absolute;
+top:0;
+width: 100%;
+pointer-events:none;
+order:2;
+z-index:1;
+transition:background .4s ease-in-out;
+box-sizing:border-box;
+overflow:hidden;
+white-space:nowrap;
+color: white;
+
+}
+
+option:hover {
+background:#666;
+}
+
+select:focus .option {
+position:relative;
+pointer-events:all;
+}
+</style>
+
+
+<h1>Login</h1>
+
+
+<form method="POST">
+{% csrf_token %}
+
+{{form.as_p}}
+
+<button type="submit">Login</button> 
+
+</form>

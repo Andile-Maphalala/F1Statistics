@@ -1,9 +1,134 @@
 {% extends 'Head2Head/main.html' %}
 
 {% block content %}
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet">
+</head>
+<style>
+@import url(https://fonts.googleapis.com/css?family=Oswald:400,700);
+@import url(https://fonts.googleapis.com/css?family=Nunito:400,700);
+:root {
+  background: -webkit-linear-gradient(top, #222838 0%, #131621 100%);
+  height: 100vh;
+}
+
+ .add, .delete{
+  border: none;
+  border-radius: 4px;
+  text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.48);
+  overflow: hidden;
+  padding: 20px 50px 20px 70px;
+  margin-bottom: 20px;
+  font-size: 20px;
+  position: relative;
+  color: white;
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+  -webkit-transition: background-position .7s,box-shadow .4s;
+  transition: background-position .7s,box-shadow .4s;
+  background-size: 110%;
+  font-family: 'Oswald', sans-serif;
+}
+ .add:hover, .delete:hover{
+  background-position: 0% 30%;
+}
+ .add:hover:after, .delete:hover:after {
+  right: -40px;
+  -webkit-transition: right .4s,-webkit-transform 30s .2s linear;
+  transition: right .4s,-webkit-transform 30s .2s linear;
+  transition: right .4s,transform 30s .2s linear;
+  transition: right .4s,transform 30s .2s linear,-webkit-transform 30s .2s linear;
+}
+ .add:before, .delete:before,  .add:after, .delete:after {
+  font-family: FontAwesome;
+  display: block;
+  position: absolute;
+}
+.add:before, .delete:before{
+  -webkit-transition: all 1s;
+  transition: all 1s;
+  font-size: 30px;
+  left: 25px;
+  top: 19px;
+}
+ .add:after, .delete:after {
+  -webkit-transition: right .4s, -webkit-transform .2s;
+  transition: right .4s, -webkit-transform .2s;
+  transition: right .4s, transform .2s;
+  transition: right .4s, transform .2s, -webkit-transform .2s;
+  font-size: 100px;
+  opacity: .3;
+  right: -120px;
+  top: -17px;
+}
 
 
+
+
+.add {
+  box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 0.16) inset, 0px 0px 10px 0px #36C176;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#36C176), to(rgba(86, 202, 139, 0.18))), url("http://blog.teamthinklabs.com/wp-content/uploads/2012/09/codepen-460x253.png");
+  background-image: linear-gradient(to bottom, #36C176, rgba(86, 202, 139, 0.18)), url("http://blog.teamthinklabs.com/wp-content/uploads/2012/09/codepen-460x253.png");
+}
+.add:hover {
+  box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 0.16) inset, 0px 0px 30px 0px #36C176;
+}
+.add:hover:after {
+  -webkit-transform: scale(1);
+          transform: scale(1);
+}
+.add:hover:before {
+  -webkit-transform: scale(1.2);
+          transform: scale(1.2);
+}
+.add:after, .add:before {
+    font-family: 'Material Icons';
+    content: "\e145";
+  
+}
+.add b {
+  color: #63FFAC;
+  font-weight: 700;
+}
+
+.delete {
+  box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 0.16) inset, 0px 0px 10px 0px #33E7EA;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#33E7EA), to(rgba(161, 245, 245, 0.24))), url("https://cdn2.itpro.co.uk/sites/itpro/files/server_room.jpg");
+  background-image: linear-gradient(to bottom, #33E7EA, rgba(161, 245, 245, 0.24)), url("https://cdn2.itpro.co.uk/sites/itpro/files/server_room.jpg");
+}
+.delete:hover {
+  box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 0.16) inset, 0px 0px 30px 0px #33E7EA;
+}
+.delete:hover:after {
+  -webkit-transform: rotate(3000deg);
+          transform: rotate(3000deg);
+}
+.delete:hover:before {
+  -webkit-transform: rotate(360deg);
+          transform: rotate(360deg);
+}
+.delete:after, .delete:before {
+    font-family: 'Material Icons';
+    content: "\e872";
+  
+}
+.delete b {
+  color: #1CF4FF;
+  font-weight: 700;
+}
+
+</style>
 
 <h1>LOVE</h1>
+
+
+<div class='containerbtn'>
+    <div class="row">
+    <button class='add'>Load New Data</button>
+    <button class='delete'>Delete Race Data</button>
+</div>
+
+  </div>
 
 {% endblock %}
