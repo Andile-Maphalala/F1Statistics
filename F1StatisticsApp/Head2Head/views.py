@@ -18,6 +18,8 @@ from django.http import JsonResponse
 import json
 from django.conf import settings
 from json import dumps
+import threading
+
 # Create your views here.
 
 #Qauly variables
@@ -77,6 +79,7 @@ D2RaceRecord = 0
 #/////////////////////////////////////////////  Admin Tasks  ///////////////////////////////////////////////////////////////////
 
 #Admin Page
+
 def Load(request):
   
 
@@ -111,10 +114,11 @@ def Load(request):
             'rescount' : len(ListOFres)
 
         }
+        
 
         value = request.GET.get('value','')
         context = {'data':value, "gplist" : ListofGrandPrix, "sesslist":ListOFSessions,'prac':ListOFprac, "qualy" : ListOFqualy, "sprint":ListOFspr,
-        "start":ListOFstart,'pit':ListOFpit, "fast" : ListOFfast, "res":ListOFres, 'countobject' : countobject,
+        "start":ListOFstart,'pit':ListOFpit, "fast" : ListOFfast, "res":ListOFres, 'countobject' : countobject
         
         }
         return render(request,'Head2Head/LoadData.html',context)
@@ -126,13 +130,15 @@ def LoadAllNewData(request):
         form = CheckForm(request.POST)
         if form.is_valid():
             Password = form.cleaned_data['pw']
-            if Password == os.environ.get('DjangoPw'):
+            if Password == settings.MYPASSWORD:
                 # LoadDrivers()
-                LoadRaceWeekendData()
+                #multithreading as a workaround for the timeout issues in deployment
+                t = threading.Thread(target=LoadRaceWeekendData)
+                t.setDaemon(True)
+                t.start()
                 return HttpResponseRedirect('load')
+               
             else:
-                dataJSON = False
-                context = {'data':dataJSON}
                 url = 'load?value=False'
                 return HttpResponseRedirect(url)
 
@@ -143,13 +149,11 @@ def DeleteSpecifiedData(request):
             Password = form.cleaned_data['pw']
             Session = form.cleaned_data['sess']
             Grandprix = form.cleaned_data['gp']
-            if Password == os.environ.get('DjangoPw') or os.environ.get('DjangoPw') == None:
+            if Password == settings.MYPASSWORD:
                 # LoadDrivers()
                 DelSpeciFiedMethod(Grandprix,Session)
                 return HttpResponseRedirect('load')
             else:
-                dataJSON = False
-                context = {'data':dataJSON}
                 url = 'load?value=False'
                 return HttpResponseRedirect(url)
 

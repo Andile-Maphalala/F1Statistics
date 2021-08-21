@@ -71,8 +71,8 @@ select:focus {
 
 width:250px;
 height:40px;
-color: white;
-background:#333;
+color: rgb(0, 0, 0);
+background:rgb(255, 255, 255);
 
 }
 
@@ -122,12 +122,41 @@ pointer-events:all;
 	color: black;
 }
 
+.btnCan{
+	width: 100%;
+	background-color: rgb(226, 69, 69);
+	float: left;
+	display: block;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+.btnCon{
+	width: 100%;
+	background-color: rgb(72, 216, 115);
+	left: 10px;
+	display: block;
+    margin: 10px 0;
+    padding: 10px;
+}
 .mynav{
 	top: 0px;
 	position: fixed;
 	float: right;
 	right: 100px;
 	font-size: 20px;
+}
+
+.row{
+	width: 100%;
+}
+
+.home{
+	top:0px;
+	left: 10px;
+	position: fixed;
+	font-size: 30px;
+
 }
 </style>
 
@@ -138,7 +167,7 @@ pointer-events:all;
 <!-- Navbar -->
 
   <!-- Navbar -->
-
+  <a href="drivers" class="home"> <i class="fas fa-home"></i>Stats</a>
 <div class="mynav">
   {% if user.is_authenticated %}
   <span>Hi {{user.username}}</span>
@@ -155,15 +184,15 @@ pointer-events:all;
 
 
 <div class="modal" tabindex="-1" role="dialog" id="load" >
-	<div class="modal-dialog" role="document">
+	<div class="modal-dialog" role="document" >
 	  <div class="modal-content">
-		<div class="modal-header" alert alert-danger>
+		<div class="modal-header" alert alert-danger style="background-color: #191828; color: white;">
 		  <h5 class="modal-title">Load New data</h5>
-		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		  <button type="button" style="color: white;" class="close" data-dismiss="modal" aria-label="Close">
 			<span aria-hidden="true">&times;</span>
 		  </button>
 		</div>
-		<div class="modal-body">
+		<div class="modal-body" style="background-color: #191828; color: white;">
 		  <p>Are you sure you want to Load New data</p>
 		  <br>
 		  <form action="LoadData" method="POST">
@@ -173,11 +202,15 @@ pointer-events:all;
 			</div>
 			
 			
-				<div class="modal-footer">
-						<button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
-					
-						<button type="submit" class="btn btn-success">Ok</button>
-					
+				<div class="modal-footer" style="background-color: #191828; color: white;">
+					<div class="row">
+						<div  class="col">
+						<button type="button" class="btnCan" data-dismiss="modal">Cancel</button>
+					</div>
+					<div  class="col">
+						<button type="submit" class="btnCon">Ok</button>
+					</div>
+					</div>
 				</div>
 	</form>
 	  </div>
@@ -188,13 +221,13 @@ pointer-events:all;
   <div class="modal" tabindex="-1" role="dialog" id="delGP" >
 	<div class="modal-dialog" role="document">
 	  <div class="modal-content">
-		<div class="modal-header" alert alert-danger>
+		<div class="modal-header" alert alert-danger style="background-color: #191828; color: white;">
 		  <h5 class="modal-title">Delete Specific Race Data</h5>
-		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		  <button type="button" style="color: white" class="close" data-dismiss="modal" aria-label="Close">
 			<span aria-hidden="true">&times;</span>
 		  </button>
 		</div>
-		<div class="modal-body">
+		<div class="modal-body" style="background-color: #191828; color: white;">
 			<p>Are you sure you want to Delete this specified data</p>
 			<br>
 			<form action="DelSpec" method="POST">
@@ -205,25 +238,27 @@ pointer-events:all;
 					<option value="{{ i }}"  selected = "ALL" >{{i}}</option>
 				{% endfor %}
 				</select>
-			  <br>
+			  <br> <br>
 				<Label for="sess">Select Session</Label>
 				<select name="sess">
 					{% for i in sesslist %}
 						<option value="{{ i }}" selected = "ALL" >{{i}}</option>
 					{% endfor %}
 					</select>
-					<br>
+					<br> <br>
 
 					<Label for="pw">Enter Password</Label>
 			<input type = "text" name="pw">
 		</div>
-		<div class="modal-footer">
-			<div class="modal-footer">
-				<button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
-			
-				<button type="submit" class="btn btn-success">Ok</button>
-			
-		</div>
+			<div class="modal-footer" style="background-color: #191828; color: white;">
+				<div class="row">
+					<div  class="col">
+				<button type="button" class="btnCan" data-dismiss="modal">Cancel</button>
+			</div>
+				<div  class="col">
+				<button type="submit" class="btnCon">Ok</button>
+			</div>
+			</div>
 		</div>
 	</form>
 	  </div>

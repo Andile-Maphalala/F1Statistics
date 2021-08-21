@@ -366,7 +366,12 @@ input[type="checkbox"]{
 <li><a href="drivers">Drivers</a></li>
 <li><a href="teams">Teams</a></li>
 <li><a href="graph">Graph</a></li>
+{% if user.is_authenticated %}
+<li><a href="load">Admin</a></li>
+{% else %}
 <li><a href="login">Login</a></li>
+
+{% endif %}
 <!-- <li><a href="load">Data</a></li> -->
 
 </ul>
