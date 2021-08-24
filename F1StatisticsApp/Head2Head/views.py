@@ -141,6 +141,9 @@ def LoadAllNewData(request):
             else:
                 url = 'load?value=False'
                 return HttpResponseRedirect(url)
+        else:
+            url = 'load?value=Form'
+            return HttpResponseRedirect(url)
 
 def DeleteSpecifiedData(request):
     if request.method == 'POST':
@@ -156,6 +159,9 @@ def DeleteSpecifiedData(request):
             else:
                 url = 'load?value=False'
                 return HttpResponseRedirect(url)
+        else:
+            url = 'load?value=Form'
+            return HttpResponseRedirect(url)
 
 def DelSpeciFiedMethod(GrandPrix,Session):
     if Session == 'ALL' and GrandPrix == 'ALL':

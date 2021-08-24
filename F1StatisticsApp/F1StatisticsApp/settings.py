@@ -26,11 +26,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = os.environ['DEBUG_VALUE'] == 'True'
+DEBUG = os.environ['DEBUG_VALUE'] == 'True'
 MYPASSWORD = os.environ.get('DJANGOPW')
 
 
-DEBUG = True
+
 
 ALLOWED_HOSTS = ['myf1stats.herokuapp.com']
 

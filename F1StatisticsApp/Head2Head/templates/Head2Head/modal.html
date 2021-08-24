@@ -292,6 +292,25 @@ pointer-events:all;
 	</div>
   </div>
 
+  <div class="modal" tabindex="-1" role="dialog" id="formerror" >
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+		<div class="modal-header" alert alert-danger>
+		  <h5 class="modal-title">Error</h5>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		<div class="modal-body">
+		  <p>Form is incomplete</p>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-success" data-dismiss="modal">Ok</button>
+		</div>
+	  </div>
+	</div>
+  </div>
+
 
   <div class="modal" tabindex="-1" role="dialog" id="success" >
 	<div class="modal-dialog" role="document">
@@ -647,16 +666,18 @@ pointer-events:all;
 <script type="text/javascript">
 	var data = "{{data}}"
 	console.log(data)
-	if ((data == "True") || (data == "False"))
-	{
-
 	if (data == "True")
 	{
 		$('#success').modal('show')
 	}
-	else{
+	else if (data == "False")
+	{
 		$('#error').modal('show')
 	}
-}
+	else if(data == "Form")
+	{
+		$('#formerror').modal('show')
+	}
+
 </script>
 </html>
