@@ -29,7 +29,7 @@ class ResultClass(models.Model):
     Car = models.CharField(max_length=200)
     Laps = models.IntegerField(default=0)
     Time = models.CharField(max_length=200)
-    Pts = models.IntegerField(default=0)
+    Pts = models.FloatField(default=0)
     GP = models.CharField(max_length=200)
 
 class StartingClass(models.Model):
@@ -58,7 +58,7 @@ class SprintClass(models.Model):
     Car = models.CharField(max_length=200)
     Laps = models.IntegerField(default=0)
     Time = models.CharField(max_length=200)
-    Pts = models.IntegerField(default=0)
+    Pts = models.FloatField(default=0)
     GP = models.CharField(max_length=200)
 
 

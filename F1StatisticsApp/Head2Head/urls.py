@@ -6,7 +6,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     # path('index', views.index, name='index'),
-    # path('x', views.drivers),
+    path('x', views.drivers),
     path('', views.comparedrivers),
     path('drivers', views.comparedrivers,name='drivers'),
     path('teams',views.compareteams),

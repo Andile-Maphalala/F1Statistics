@@ -367,17 +367,49 @@ def getQualyGaps():
 def FakeAdmin(request):
     return render(request,'Head2Head/Fake.html')
 
+class DriverListClass:
+    def __init__(self,Surname = '',Name = '',No = '',Car = '',Abbr = '',Pts= 0):
+        self.Name = Name
+        self.Surname = Surname
+        self.No = No
+        self.Car = Car
+        self.Abbr = Abbr
+        self.Pts = Pts
 #list of drivers
 def drivers(request):
     DriverObjetList = DriverClass.objects.all()
-    context = {'myDrivers':DriverObjetList}
+    RaceObjectList = ResultClass.objects.all()
+    SprintList = SprintClass.objects.all()
+
+
+    DriverList = []
+    for x in DriverObjetList:
+        ListofRace  = [z for z in RaceObjectList if z.No == x.No]
+        ListofSprint  = [z for z in SprintList if z.No == x.No]
+        Points = sum(p.Pts for p in ListofRace) +  sum(p.Pts for p in ListofSprint)
+
+        Driverobject = DriverListClass()
+        Driverobject.Name = x.Name
+        Driverobject.Surname = x.Surname
+        Driverobject.No = x.No
+        Driverobject.Car = x.Car
+        Driverobject.Abbr = x.Abbr
+        Driverobject.Pts = Points
+        # Driverobject = { 'Name' : x.Driverobject, 'Surname' : x.Surname,'No' : x.No,
+        #                 'Car' : x.Car,'Abbr' : x.Abbr,'Pts' : Points
+
+        # }
+        DriverList.append(Driverobject)
+        
+    DriverList.sort(key=lambda x: x.Pts,reverse = True)
+    context = {'myDrivers':DriverList}
 
     return render(request,'Head2Head/drivers.html',context)
 
 
 def comparedrivers(request):
     if request.method == 'GET':
-        print('Printing Post: ',request.GET)
+        # print('Printing Post: ',request.GET)
         form = Driverform(request.GET)
         if form.is_valid():
   
@@ -507,7 +539,7 @@ def compareteams(request):
 
     return render(request,'Head2Head/TeamCompare.html',context)
 
-
+#///////////////////////////////////////////////
 
 #/////////////////////////////////////////////  Get statistsics  ///////////////////////////////////////////////////////////////////
 
@@ -555,6 +587,7 @@ def GetQaulyDriverStats(Driver1,Driver2):
     countd2 = 0
     for y in GPList:
 
+       
         #Get current gp qualy for each driver
         x = next((z for z in Driver1Sessions if z.GP == y),'NotFound')
         p = next((z for z in Driver2Sessions if z.GP == y),'NotFound')
@@ -601,42 +634,28 @@ def GetQaulyDriverStats(Driver1,Driver2):
             else:
                 Driver2PosList.append(int(p.Pos))
 
-            #Get driver best time from highest session
-        if D1Skipped == False:
-            if x.Q3 != '':
-                if x.Q3 == 'DNF':
+            #Get driver best time from highest session they both competed in
+        if D1Skipped == False and D2Skipped == False:
+            if x.Q3 != '' and p.Q3 != '':
+                if x.Q3 == 'DNF' or p.Q3 == 'DNF'  or x.Q3 == 'DNS' or p.Q3 == 'DNS':
                     Driver1Time = x.Q2
+                    Driver2Time = p.Q2
 
                 else:
                     Driver1Time = x.Q3
-
-            elif x.Q2 != '':
-                if x.Q3 == 'DNF':
-                    Driver1Time = x.Q1
-
-                else:
-                    Driver1Time = x.Q2
-
-            else:
-                Driver1Time = x.Q1
-        
-        #Get driver best time from highest session
-        if D2Skipped == False:
-            if p.Q3 != '':
-                if p.Q3 == 'DNF':
-                    Driver2Time = p.Q2
-
-                else:
                     Driver2Time = p.Q3
 
-            elif p.Q2 != '':
-                if p.Q3 == 'DNF':
+            elif x.Q2 != ''  and p.Q2 != '':
+                if x.Q2 == 'DNF'  or p.Q2 == 'DNF' or x.Q2 == 'DNS'  or p.Q2 == 'DNS':
+                    Driver1Time = x.Q1
                     Driver2Time = p.Q1
 
                 else:
+                    Driver1Time = x.Q2
                     Driver2Time = p.Q2
 
             else:
+                Driver1Time = x.Q1
                 Driver2Time = p.Q1
 
         #count qualy appearnaces
@@ -839,13 +858,13 @@ def GetRaceDriverStats(Driver1,Driver2):
         # CHeck if driver has been classifed and depending on that add to one list or another
         if D1Skipped == False:
             if x.Pos == "RT" or x.Pos == "NC" or x.Pos == "DQ":
-                d1qualsession = [z for z in RaceList if z.GP == x.GP]
+                d1racesession = [z for z in RaceList if z.GP == x.GP]
                 countPos = 0
-                for s in d1qualsession:
+                for s in d1racesession:
                     if s.No == x.No:
                         countPos +=1
                         Driver1PosListWithNC.append(countPos)
-                        Driver1PointListWithNC.append(int(x.Pts))
+                        Driver1PointListWithNC.append(float(x.Pts))
                         break
                     else:
                         countPos +=1
@@ -853,14 +872,14 @@ def GetRaceDriverStats(Driver1,Driver2):
             else:
                 Driver1PosList.append(int(x.Pos))
                 Driver1PosListWithNC.append(int(x.Pos))
-                Driver1PointList.append(int(x.Pts))
-                Driver1PointListWithNC.append(int(x.Pts))
+                Driver1PointList.append(float(x.Pts))
+                Driver1PointListWithNC.append(float(x.Pts))
 
         if D2Skipped == False:
             if p.Pos == "RT" or p.Pos == "NC" or p.Pos == "DQ":
-                d2qualsession = [z for z in RaceList if z.GP == p.GP]
+                d2racesession = [z for z in RaceList if z.GP == p.GP]
                 countPos = 0
-                for s in d2qualsession:
+                for s in d2racesession:
                     if s.No == p.No:
                         countPos +=1
                         Driver2PosListWithNC.append(countPos)
@@ -872,8 +891,8 @@ def GetRaceDriverStats(Driver1,Driver2):
             else:
                 Driver2PosList.append(int(p.Pos))
                 Driver2PosListWithNC.append(int(p.Pos))
-                Driver2PointList.append(int(p.Pts))
-                Driver2PointListWithNC.append(int(p.Pts))
+                Driver2PointList.append(float(p.Pts))
+                Driver2PointListWithNC.append(float(p.Pts))
 
 
 
@@ -919,12 +938,12 @@ def GetRaceDriverStats(Driver1,Driver2):
     Driver2SprintPoints = 0
 
     for w in Driver1Sprint:
-        currentpts = int(w.Pts)
+        currentpts = float(w.Pts)
         if currentpts > 0:
             Driver1SprintPoints += currentpts
 
     for w in Driver2Sprint:
-        currentpts = int(w.Pts)
+        currentpts = float(w.Pts)
         if currentpts > 0:
             Driver2SprintPoints += currentpts
 
@@ -937,11 +956,11 @@ def GetRaceDriverStats(Driver1,Driver2):
 
 
     # Get list of points scored for that team  #contingency for if any team pulls a redbull
-    D1PointsWithTeam =  [int(z.Pts) for z in Driver1Sessions if z.Car == D1LastTeam]
-    D2PointsWithTeam =  [int(z.Pts) for z in Driver2Sessions if z.Car == D2LastTeam]
+    D1PointsWithTeam =  [float(z.Pts) for z in Driver1Sessions if z.Car == D1LastTeam]
+    D2PointsWithTeam =  [float(z.Pts) for z in Driver2Sessions if z.Car == D2LastTeam]
 
-    D1PointsWithTeamSprint =  [int(z.Pts) for z in Driver1Sprint if z.Car == D1LastTeam]
-    D2PointsWithTeamSprint  =  [int(z.Pts) for z in Driver2Sprint if z.Car == D2LastTeam]
+    D1PointsWithTeamSprint =  [float(z.Pts) for z in Driver1Sprint if z.Car == D1LastTeam]
+    D2PointsWithTeamSprint  =  [float(z.Pts) for z in Driver2Sprint if z.Car == D2LastTeam]
 
     FinalDriver1ListPoint = D1PointsWithTeam + D1PointsWithTeamSprint
     FinalDriver2ListPoint = D2PointsWithTeam + D2PointsWithTeamSprint
@@ -1146,48 +1165,83 @@ def GetTeamQaulyStats(Team1,Team2):
                 countDriverPos += 1
 
 
-        #Get both driver best time from highest session
-        if T1Skipped == False:
+        #Get highest session in which all drivers particicpated
+        T1Qauly = 3
+        T2Qauly = 3
+        if T1Skipped == False and T2Skipped == False:
             for w in x :
-                if w.Pos != 'NC' and w.Pos != 'RT':
-                    if w.Q3 != '':
-                        if w.Q3 == 'DNF':
-                            DriverTime = w.Q2
-                            Team1TimeList.append(DriverTime)
-                        else:
-                            DriverTime = w.Q3
-                            Team1TimeList.append(DriverTime)
-                    elif w.Q2 != '':
-                        if w.Q3 == 'DNF':
-                            DriverTime = w.Q1
-                            Team1TimeList.append(DriverTime)
-                        else:
-                            DriverTime = w.Q2
-                            Team1TimeList.append(DriverTime)
+                if w.Q3 != '':
+                    if w.Q3 == 'DNF':
+                        DriverTime = w.Q2
+                        if T1Qauly > 2:
+                            T1Qauly = 2
                     else:
+                        DriverTime = w.Q3
+                        if T1Qauly == 3:
+                            T1Qauly = 3
+                elif w.Q2 != '':
+                    if w.Q3 == 'DNF':
                         DriverTime = w.Q1
-                        Team1TimeList.append(DriverTime)
-    #Get both driver best time from highest session
-        if T2Skipped == False:
+                        T1Qauly = 1
+                    else:
+                        DriverTime = w.Q2
+                        if T1Qauly > 2:
+                            T1Qauly = 2
+                else:
+                    DriverTime = w.Q1
+                    T1Qauly = 2
+
             for w in p :
-                if w.Pos != 'NC' and w.Pos != 'RT':
-                    if w.Q3 != '':
-                        if w.Q3 == 'DNF':
-                            DriverTime = w.Q2
-                            Team2TimeList.append(DriverTime)
-                        else:
-                            DriverTime = w.Q3
-                            Team2TimeList.append(DriverTime)
-                    elif w.Q2 != '':
-                        if w.Q3 == 'DNF':
-                            DriverTime = w.Q1
-                            Team2TimeList.append(DriverTime)
-                        else:
-                            DriverTime = w.Q2
-                            Team2TimeList.append(DriverTime)
+                if w.Q3 != '':
+                    if w.Q3 == 'DNF':
+                        DriverTime = w.Q2
+                        if T2Qauly > 2:
+                            T2Qauly = 2
                     else:
+                        DriverTime = w.Q3
+                        if T2Qauly == 3:
+                            T2Qauly = 3
+                elif w.Q2 != '':
+                    if w.Q3 == 'DNF':
                         DriverTime = w.Q1
-                        Team2TimeList.append(DriverTime)
+                        T2Qauly = 1
+                    else:
+                        DriverTime = w.Q2
+                        if T2Qauly > 2:
+                            T2Qauly = 2
+                else:
+                    DriverTime = w.Q1
+                    T2Qauly = 1
+            
+            lowestqualy = ''
+            if T1Qauly > T2Qauly:
+                lowestqualy = T2Qauly
+            elif T2Qauly > T1Qauly:
+                lowestqualy = T1Qauly
+            else:
+                lowestqualy = T1Qauly
+            
+            if lowestqualy == 1:
+                for w in x :
+                    DriverTime = w.Q1
+                    Team1TimeList.append(DriverTime)
+                for w in p :
+                    DriverTime = w.Q1
+                    Team2TimeList.append(DriverTime)
+            elif lowestqualy == 2:
+                for w in x :
+                    DriverTime = w.Q2
+                    Team1TimeList.append(DriverTime)
+                for w in p :
+                    DriverTime = w.Q2
+                    Team2TimeList.append(DriverTime)
+            elif lowestqualy == 3:
+                for w in x :
+                    DriverTime = w.Q3
+                    Team1TimeList.append(DriverTime)
+                for w in p :
+                    DriverTime = w.Q3
+                    Team2TimeList.append(DriverTime)
 
         #get no. of q2 and q2 appreances
         if T1Skipped == False:
@@ -1378,7 +1432,7 @@ def GetTeamRaceStats(Team1,Team2):
                         if s.No == d1.No:
                             countPos +=1
                             Team1PosListWithNC.append(countPos)
-                            Team1PointListWithNC.append(int(d1.Pts))
+                            Team1PointListWithNC.append(float(d1.Pts))
                             break
                         else:
                             countPos +=1
@@ -1386,8 +1440,8 @@ def GetTeamRaceStats(Team1,Team2):
                 else:
                     Team1PosList.append(int(d1.Pos))
                     Team1PosListWithNC.append(int(d1.Pos))
-                    Team1PointList.append(int(d1.Pts))
-                    Team1PointListWithNC.append(int(d1.Pts))
+                    Team1PointList.append(float(d1.Pts))
+                    Team1PointListWithNC.append(float(d1.Pts))
 
         if T2Skipped == False:
             for d2 in p:
@@ -1406,8 +1460,8 @@ def GetTeamRaceStats(Team1,Team2):
                 else:
                     Team2PosList.append(int(d2.Pos))
                     Team2PosListWithNC.append(int(d2.Pos))
-                    Team2PointList.append(int(d2.Pts))
-                    Team2PointListWithNC.append(int(d2.Pts))
+                    Team2PointList.append(float(d2.Pts))
+                    Team2PointListWithNC.append(float(d2.Pts))
 
 
 
@@ -1445,12 +1499,12 @@ def GetTeamRaceStats(Team1,Team2):
     Team2SprintPoints = 0
 
     for w in Team1Sprint:
-        currentpts = int(w.Pts)
+        currentpts = float(w.Pts)
         if currentpts > 0:
             Team1SprintPoints += currentpts
 
     for w in Team2Sprint:
-        currentpts = int(w.Pts)
+        currentpts = float(w.Pts)
         if currentpts > 0:
             Team2SprintPoints += currentpts
 
@@ -1614,10 +1668,10 @@ def GetTeamPoints(Team1,Team2):
         columns =currentrow.find_all("td")
         CurrentTeam = columns[2].text.replace('\n', ' ').strip()
         if CurrentTeam == Team1:
-                T1Points = int(columns[3].text.replace('\n', ' ').strip())
+                T1Points = float(columns[3].text.replace('\n', ' ').strip())
 
         if CurrentTeam == Team2:
-                T2Points = int(columns[3].text.replace('\n', ' ').strip())
+                T2Points = float(columns[3].text.replace('\n', ' ').strip())
 
     PointsObjects = {} # empty dict instance
 
@@ -1909,6 +1963,19 @@ def GetSprint(soup,Name):
 
     # return RaceObjectList
 
+def SessionAvailable(Link):
+    page = requests.get(Link)
+    soup = BeautifulSoup(page.content, 'html.parser')
+
+    Sessions = soup.find('ul',attrs={"class":"resultsarchive-side-nav"})
+    ListSession = soup.findAll('li',attrs={"class":"side-nav-item"})
+
+    listofname = []
+    for x in ListSession:
+        Name = x.text.replace('\n','').strip()
+        listofname.append(Name)
+
+    return listofname
 
 class RaceResultClass:
     def __init__(self,GP = '',Date = '',Winner = '',Car = '',Laps = 0,Time= ''):
@@ -1997,143 +2064,154 @@ def LoadRaceWeekendData():
     for x in LinkList:
         RaceName = x.Name
         isSprintWeekend = testIFsprintweekend(x.Url)
+        SessionList = SessionAvailable(x.Url)
+        if 'Sprint' in SessionList:
+            isSprintWeekend = True
+        else:
+            isSprintWeekend = False
 
+        
         print("---------------------------Staring with " + RaceName +" -------------------------------------------------")
-        newLink = x.Url
-        page = requests.get(x.Url)
-        soup = BeautifulSoup(page.content, 'html.parser')
-        GetResult(soup,RaceName)
-        
-
-
-        print("---------------------------Done with Race-------------------------------------------------")
-
-
-        FastestLapLink = newLink.replace('race-result.html','fastest-laps.html')
-        page = requests.get(FastestLapLink)
-        soup = BeautifulSoup(page.content, 'html.parser')
-        GetFast(soup,RaceName)
-
-
-        print("---------------------------Done with Fastest-------------------------------------------------")
-
-
-
-        PitstopLink = FastestLapLink.replace('fastest-laps.html','pit-stop-summary.html')
-        page = requests.get(PitstopLink)
-        soup = BeautifulSoup(page.content, 'html.parser')
-        GetPit(soup,RaceName)
-
-
-
-
-        print("---------------------------Done with Pitstop-------------------------------------------------")
-
-
-        Note = ''
-        StartingLink = PitstopLink.replace('pit-stop-summary.html','starting-grid.html')
-        page = requests.get(StartingLink)
-        soup = BeautifulSoup(page.content, 'html.parser')
-        GetStart(soup,RaceName)
-
-
-        print("---------------------------Done with Starting grid-------------------------------------------------")
-
-        
-        if isSprintWeekend == False:
-            QaulyLink = StartingLink.replace('starting-grid.html','qualifying.html')
-            page = requests.get(QaulyLink)
+        if 'Race result' in SessionList:
+            newLink = x.Url
+            page = requests.get(x.Url)
             soup = BeautifulSoup(page.content, 'html.parser')
-            GetQualy(soup,RaceName)
-            
+            GetResult(soup,RaceName)
             
 
 
+            print("---------------------------Done with Race-------------------------------------------------")
 
-            print("---------------------------Done with Qauly-------------------------------------------------")
-
-
-            PracticeLink = QaulyLink.replace('qualifying.html','practice-3.html')
-            page = requests.get(PracticeLink)
+        if 'Fastest laps' in SessionList:
+            FastestLapLink = newLink.replace('race-result.html','fastest-laps.html')
+            page = requests.get(FastestLapLink)
             soup = BeautifulSoup(page.content, 'html.parser')
-            GetPractice(soup,RaceName,'P3')
+            GetFast(soup,RaceName)
 
 
+            print("---------------------------Done with Fastest-------------------------------------------------")
 
-            print("---------------------------Done with P3-------------------------------------------------")
 
-
-            PracticeLink = PracticeLink.replace('practice-3.html','practice-2.html')
-            page = requests.get(PracticeLink)
+        if 'Pit stop summary' in SessionList:
+            PitstopLink = newLink.replace('race-result.html','pit-stop-summary.html')
+            page = requests.get(PitstopLink)
             soup = BeautifulSoup(page.content, 'html.parser')
-            GetPractice(soup,RaceName,'P2')
-
-            
-
-            print("---------------------------Done with P2 -------------------------------------------------")
-
-            soup = ''
-            PracticeLink = PracticeLink.replace('practice-2.html','practice-1.html')
-            page = requests.get(PracticeLink)
-            soup = BeautifulSoup(page.content, 'html.parser')
-            GetPractice(soup,RaceName,'P1')
-            
+            GetPit(soup,RaceName)
 
 
 
-            print("---------------------------Done with P1-------------------------------------------------")
-        elif isSprintWeekend == True:
-            SprintQaulyLink = StartingLink.replace('starting-grid.html','sprint-qualifying-results.html')
-            page = requests.get(SprintQaulyLink)
-            soup = BeautifulSoup(page.content, 'html.parser')
-            GetSprint(soup,RaceName)
-     
 
-            print("---------------------------Done with Sprint Qaulifying-------------------------------------------------")
+            print("---------------------------Done with Pitstop-------------------------------------------------")
 
-            
-            SprintQaulyLinkGrid = SprintQaulyLink.replace('sprint-qualifying-results.html','sprint-qualifying-grid.html')
-            page = requests.get(SprintQaulyLinkGrid)
+        if 'Starting grid' in SessionList:
+            Note = ''
+            StartingLink = newLink.replace('race-result.html','starting-grid.html')
+            page = requests.get(StartingLink)
             soup = BeautifulSoup(page.content, 'html.parser')
             GetStart(soup,RaceName)
 
-      
 
-            print("---------------------------Done with Sprint Qaulifying Grid-------------------------------------------------")
+            print("---------------------------Done with Starting grid-------------------------------------------------")
+
+        
+        if isSprintWeekend == False:
+            if 'Qualifying' in SessionList:
+                QaulyLink = newLink.replace('race-result.html','qualifying.html')
+                page = requests.get(QaulyLink)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                GetQualy(soup,RaceName)
+                
+                
 
 
-            PracticeLink = SprintQaulyLinkGrid.replace('sprint-qualifying-grid.html','practice-2.html')
-            page = requests.get(PracticeLink)
-            soup = BeautifulSoup(page.content, 'html.parser')
-            Practice2List = GetPractice(soup,RaceName,'P2')
 
-         
+                print("---------------------------Done with Qauly-------------------------------------------------")
 
-            print("---------------------------Done with P2 -------------------------------------------------")
+            if 'Practice 3' in SessionList:
+                PracticeLink = newLink.replace('race-result.html','practice-3.html')
+                page = requests.get(PracticeLink)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                GetPractice(soup,RaceName,'P3')
 
 
-            QaulyLink = PracticeLink.replace('practice-2.html','qualifying.html')
-            page = requests.get(QaulyLink)
-            soup = BeautifulSoup(page.content, 'html.parser')
-            GetQualy(soup,RaceName)
+
+                print("---------------------------Done with P3-------------------------------------------------")
+
+            if 'Practice 2' in SessionList:
+                PracticeLink = newLink.replace('race-result.html','practice-2.html')
+                page = requests.get(PracticeLink)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                GetPractice(soup,RaceName,'P2')
+
+                
+
+                print("---------------------------Done with P2 -------------------------------------------------")
+
+            if 'Practice 1' in SessionList:
+                soup = ''
+                PracticeLink = newLink.replace('race-result.html','practice-1.html')
+                page = requests.get(PracticeLink)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                GetPractice(soup,RaceName,'P1')
             
-          
 
 
 
-            print("---------------------------Done with Qauly-------------------------------------------------")
+                print("---------------------------Done with P1-------------------------------------------------")
+        elif isSprintWeekend == True:
+            if 'Sprint' in SessionList:
+                SprintQaulyLink = newLink.replace('race-result.html','sprint-results.html')
+                page = requests.get(SprintQaulyLink)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                GetSprint(soup,RaceName)
+        
 
-            soup = ''
-            PracticeLink = QaulyLink.replace('qualifying.html','practice-1.html')
-            page = requests.get(PracticeLink)
-            soup = BeautifulSoup(page.content, 'html.parser')
-            GetPractice(soup,RaceName,'P1')
+                print("---------------------------Done with Sprint Qaulifying-------------------------------------------------")
+
+            if 'Sprint grid' in SessionList:
+                SprintQaulyLinkGrid = newLink.replace('race-result.html','sprint-qualifying-grid.html')
+                page = requests.get(SprintQaulyLinkGrid)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                GetStart(soup,RaceName)
+
+        
+
+                print("---------------------------Done with Sprint Qaulifying Grid-------------------------------------------------")
+
+            if 'Practice 2' in SessionList:
+                PracticeLink = newLink.replace('race-result.html','practice-2.html')
+                page = requests.get(PracticeLink)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                Practice2List = GetPractice(soup,RaceName,'P2')
+
             
 
+                print("---------------------------Done with P2 -------------------------------------------------")
+
+            if 'Qualifying' in SessionList:
+                QaulyLink = newLink.replace('race-result.html','qualifying.html')
+                page = requests.get(QaulyLink)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                GetQualy(soup,RaceName)
+                
             
 
 
-            print("---------------------------Done with P1-------------------------------------------------")
+
+                print("---------------------------Done with Qauly-------------------------------------------------")
+
+            if 'Practice 1' in SessionList:
+                soup = ''
+                PracticeLink = newLink.replace('race-result.html','practice-1.html')
+                page = requests.get(PracticeLink)
+                soup = BeautifulSoup(page.content, 'html.parser')
+                GetPractice(soup,RaceName,'P1')
+                
+
+                
+
+
+                print("---------------------------Done with P1-------------------------------------------------")
 
 
 

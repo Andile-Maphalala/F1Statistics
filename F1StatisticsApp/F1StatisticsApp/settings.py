@@ -96,6 +96,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+     'fia_db': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'FIADocDB',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
+        'HOST' : 'localhost',
+        # 'PORT' : ''
+
     }
 }
 
