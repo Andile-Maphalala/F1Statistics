@@ -12,6 +12,7 @@ urlpatterns = [
     path('teams',views.compareteams),
     path('load',views.Load, name='load'),
     path('LoadData', views.LoadAllNewData),
+    path('Loaddrivers', views.LoadAllDrivers),
     path('DelSpec', views.DeleteSpecifiedData),
     path('admin/', views.FakeAdmin),
     path('graph', views.Graphs),

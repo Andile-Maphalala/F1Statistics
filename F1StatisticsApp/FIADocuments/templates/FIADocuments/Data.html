@@ -226,70 +226,12 @@ h1 {
 
 <div class="btnContainter">
 		<button type='button' class='add' data-toggle="modal" data-target="#load"> Load Data</button>
-		<button type='button' class='delete' data-toggle="modal" data-target="#delGP"> Delete Data</button>
-		<button type='button'  data-toggle="modal" data-target="#drivers"> Load Drivers</button>
+		<button type='button' class='delete' data-toggle="modal" data-target="#delGP"> Load Content</button>
 	
 
 	</div>
-	<br> <br><br>
-<div class="container">
-<div class="row">
 
-	
-	
-	<br>
-	{% load static %}
-	<ul class="card-wrapper">
-		<li class="card">
-			<img style="height: 300px;" src="{% static 'Head2Head/Other/' %}danmon.jpg" alt="f1 photo">
-		  <h3>Race Results</h3>
-		  <p><strong>Entries</strong> : {{countobject.rescount}}</p>
-		  <button type='button' data-toggle="modal" data-target="#res">Open </button>
-		</li>
-		<li class="card">
-			<img style="height: 300px;" src="{% static 'Head2Head/Other/' %}Podium.JPG" alt="f1 photo">
-		  <h3>Qauly Results</h3>
-		  <p><strong>Entries</strong> : {{countobject.qualycount}}</p>
-		  <button type='button' data-toggle="modal" data-target="#qualy">Open </button>
-		</li>
-		<li class="card">
-			<img style="height: 300px;" src="{% static 'Head2Head/Other/' %}danpod.jpg" alt="f1 photo">
-		  <h3>Starting Grid</h3>
-		  <p><strong>Entries</strong> : {{countobject.startcount}}</p>
-		  <button type='button' data-toggle="modal" data-target="#start">Open </button>
-		</li>
 
-		<li class="card">
-			<img style="height: 300px;" src="{% static 'Head2Head/Other/' %}dantrophton.jpg" alt="f1 photo">
-			<h3>Pit Stop Information</h3>
-		  <p><strong>Entries</strong> : {{countobject.pitcount}}</p>
-		  <button type='button' data-toggle="modal" data-target="#pit">Open </button>
-		  </li>
-
-		  <li class="card">
-			<img style="height: 300px;" src="{% static 'Head2Head/Other/' %}danbel2014.jpg" alt="f1 photo">
-			<h3>Fastest Laps</h3>
-		  <p><strong>Entries</strong> : {{countobject.fastcount}}</p>
-		  <button type='button' data-toggle="modal" data-target="#fast">Open </button>
-		  </li>
-
-		  <li class="card">
-			<img style="height: 300px;" src="{% static 'Head2Head/Other/' %}dancan2014.jpg" alt="f1 photo">
-			<h3>Practice Results</h3>
-		  <p><strong>Entries</strong> : {{countobject.praccount}}</p>
-		  <button type='button' data-toggle="modal" data-target="#prac">Open </button>
-		  </li>
-
-		  <li class="card">
-			<img style="height: 300px;" src="{% static 'Head2Head/Other/' %}danspan2017.jpg" alt="f1 photo">
-			<h3>Sprint Qauly Results</h3>
-		  <p><strong>Entries</strong> : {{countobject.sprcount}}</p>
-		  <button type='button' data-toggle="modal" data-target="#sprint">Open </button>
-		  </li>
-	  </ul>
-	
-	
-</div>
 </body>
 
 

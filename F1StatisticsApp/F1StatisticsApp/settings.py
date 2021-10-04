@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ['DEBUG_VALUE'] == 'True'
+DEBUG = os.environ['DEBUG_VALUE'] == 'False'
 MYPASSWORD = os.environ.get('DJANGOPW')
 
 
@@ -39,12 +39,15 @@ ALLOWED_HOSTS = ['myf1stats.herokuapp.com']
 
 INSTALLED_APPS = [
     'Head2Head.apps.Head2HeadConfig',
+    # 'FIADocuments.apps.FiadocumentsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'FIADocuments'
+    
 ]
 
 MIDDLEWARE = [
@@ -93,17 +96,26 @@ WSGI_APPLICATION = 'F1StatisticsApp.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # },
+       'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'StatsDB',
+        'USER': 'postgres',
+        'PASSWORD': 'Ilove2code',
+        'HOST' : 'localhost',
+        'PORT' : '5432'
+
     },
      'fia_db': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'FIADocDB',
         'USER': 'postgres',
-        'PASSWORD': '1234',
+        'PASSWORD': 'Ilove2code',
         'HOST' : 'localhost',
-        # 'PORT' : ''
+        'PORT' : '5432'
 
     }
 }

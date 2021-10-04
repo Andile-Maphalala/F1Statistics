@@ -19,4 +19,5 @@ from django.urls import path,include
 urlpatterns = [
     path('Bamboozled/', admin.site.urls),
     path('', include('Head2Head.urls')),
+     path('', include('FIADocuments.urls')),
 ]

@@ -9,6 +9,4 @@ class DocClass(models.Model):
     url = models.CharField(max_length=200)
     content = models.TextField()
 
-    class Meta:
-        app_label = 'fia_db'
 

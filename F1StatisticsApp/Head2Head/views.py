@@ -145,6 +145,24 @@ def LoadAllNewData(request):
             url = 'load?value=Form'
             return HttpResponseRedirect(url)
 
+def LoadAllDrivers(request):
+    if request.method == 'POST':
+        form = CheckForm(request.POST)
+        if form.is_valid():
+            Password = form.cleaned_data['pw']
+            if Password == settings.MYPASSWORD:
+                t = threading.Thread(target=LoadDrivers)
+                t.setDaemon(True)
+                t.start()
+                return HttpResponseRedirect('load')
+               
+            else:
+                url = 'load?value=False'
+                return HttpResponseRedirect(url)
+        else:
+            url = 'load?value=Form'
+            return HttpResponseRedirect(url)
+
 def DeleteSpecifiedData(request):
     if request.method == 'POST':
         form = DeleteSpecificForm(request.POST)
@@ -825,33 +843,44 @@ def GetRaceDriverStats(Driver1,Driver2):
         #Get current sessions for both drivers
         x = next((z for z in Driver1Sessions if z.GP == y),'NotFound')
         p = next((z for z in Driver2Sessions if z.GP == y),'NotFound')
+        
 
+        if x == 'NotFound':
+            D1Skipped = True
+        if p == 'NotFound':
+            D2Skipped = True
+
+        
         #Add drivers position gain/loss to list dnf on included
-        if x.Time == 'DNF' or x.Time == 'DNS' or x.Pos == "DQ":
-            h = 'I have to use this cause python is drunk and cant pick up !='
-        else:
-            StartPos = next((z.Pos for z in StartingGridList if z.No == x.No and z.GP == y),'NotFound')
-            if StartPos != 'NotFound':
-                PositionsMade = int(StartPos)  - int(x.Pos)
-                D1PositionGainList.append(PositionsMade)
-        if p.Time == 'DNF' or p.Time == 'DNS' or p.Pos == "DQ":
-            h = 'I have to use this cause python i drunk and cant pick up !='
-        else:
-            StartPos = next((z.Pos for z in StartingGridList if z.No == p.No and z.GP == y),'NotFound')
-            if StartPos != 'NotFound':
-                PositionsMade = int(StartPos) - int(p.Pos)
-                D2PositionGainList.append(PositionsMade)
+        if D1Skipped == False:
+            if x.Time == 'DNF' or x.Time == 'DNS' or x.Pos == "DQ":
+                h = 'I have to use this cause python is drunk and cant pick up !='
+            else:
+                StartPos = next((z.Pos for z in StartingGridList if z.No == x.No and z.GP == y),'NotFound')
+                if StartPos != 'NotFound':
+                    PositionsMade = int(StartPos)  - int(x.Pos)
+                    D1PositionGainList.append(PositionsMade)
+        if D2Skipped == False:
+            if p.Time == 'DNF' or p.Time == 'DNS' or p.Pos == "DQ":
+                h = 'I have to use this cause python i drunk and cant pick up !='
+            else:
+                StartPos = next((z.Pos for z in StartingGridList if z.No == p.No and z.GP == y),'NotFound')
+                if StartPos != 'NotFound':
+                    PositionsMade = int(StartPos) - int(p.Pos)
+                    D2PositionGainList.append(PositionsMade)
 
-        #Total DNFS
-        if x.Time == 'DNF':
-            D1DNF +=1
-        if p.Time == 'DNF':
-            D2DNF +=1
+        if D1Skipped == False:
+            #Total DNFS
+            if x.Time == 'DNF':
+                D1DNF +=1
+        if D2Skipped == False:
+            if p.Time == 'DNF':
+                D2DNF +=1
 
-        if x == []:
-            T1Skipped = True
-        if p == []:
-            T2Skipped = True
+        # if x == []:
+        #     T1Skipped = True
+        # if p == []:
+        #     T2Skipped = True
 
 
         # Get drivers Postions thyve finiished in and the points they ended with
@@ -897,15 +926,18 @@ def GetRaceDriverStats(Driver1,Driver2):
 
 
         # Get fastes laps of that race from drivers
-        D1FastestLaps = next((z for z in FastestLaps if z.No == x.No and z.GP == y),'NotFound')
-        D2FastestLaps = next((z for z in FastestLaps if z.No == p.No and z.GP == y),'NotFound')
+        if D1Skipped == False:
+            D1FastestLaps = next((z for z in FastestLaps if z.No == x.No and z.GP == y),'NotFound')
+        if D2Skipped == False:
+            D2FastestLaps = next((z for z in FastestLaps if z.No == p.No and z.GP == y),'NotFound')
 
+        if  D1Skipped == False and D2Skipped == False:
          # Determine who was faster based on psotion
-        if D1FastestLaps != 'NotFound' and D2FastestLaps != 'NotFound':
-            if int(D1FastestLaps.Pos) < int(D2FastestLaps.Pos):
-                D1FastestLapsCounter += 1
-            elif int(D1FastestLaps.Pos) > int(D2FastestLaps.Pos):
-               D2FastestLapsCounter += 1
+            if D1FastestLaps != 'NotFound' and D2FastestLaps != 'NotFound':
+                if int(D1FastestLaps.Pos) < int(D2FastestLaps.Pos):
+                    D1FastestLapsCounter += 1
+                elif int(D1FastestLaps.Pos) > int(D2FastestLaps.Pos):
+                    D2FastestLapsCounter += 1
         
         #who finiahed ahead
         if D1Skipped == False and D2Skipped == False:
@@ -926,6 +958,9 @@ def GetRaceDriverStats(Driver1,Driver2):
                     D1Record += 1
                 else:
                     D2Record += 1
+
+        D1Skipped = False
+        D2Skipped = False
             
     D1Wins = len([z for z in Driver1PosList if z == 1])
     D2Wins = len([z for z in Driver2PosList if z == 1])
@@ -1685,6 +1720,7 @@ def GetTeamPoints(Team1,Team2):
 #/////////////////////////////////////////////////////////// Get Race Data  Methods  ////////////////////////////////////////////////
 def LoadDrivers():
 
+    print("-------------------------------------Getting Drivers--------------------------")
     driverList = DriverClass.objects.all()
     URL = 'https://www.formula1.com/en/results.html/2021/drivers.html'
     page = requests.get(URL)
@@ -1757,7 +1793,9 @@ def LoadDrivers():
         foundobject = next((z for z in driverList if z.No == Driver.No and z.Surname ==  Driver.Surname and z.Name ==  Driver.Name),'NotFound')
         if foundobject == 'NotFound' :
             Driver.save()
+        print("-------------------------------------" + Driver.Name+" "+ Driver.Surname+"--------------------------")
 
+    print("-------------------------------------Done Getting Drivers--------------------------")
 
 def GetPractice(soup,Name,CurrentSession):
     racesTable = soup.find("table", attrs={"class": "resultsarchive-table"})
