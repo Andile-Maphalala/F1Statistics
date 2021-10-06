@@ -607,12 +607,12 @@ def GetQaulyDriverStats(Driver1,Driver2):
 
        
         #Get current gp qualy for each driver
-        x = next((z for z in Driver1Sessions if z.GP == y),'NotFound')
-        p = next((z for z in Driver2Sessions if z.GP == y),'NotFound')
+        var_Driver1 = next((z for z in Driver1Sessions if z.GP == y),'NotFound')
+        var_Driver2 = next((z for z in Driver2Sessions if z.GP == y),'NotFound')
     
-        if x == 'NotFound':
+        if var_Driver1 == 'NotFound':
             D1Skipped = True
-        if p == 'NotFound':
+        if var_Driver2 == 'NotFound':
             D2Skipped = True
 
 
@@ -624,97 +624,97 @@ def GetQaulyDriverStats(Driver1,Driver2):
 
         #check if driver finished the eace and add pos to list
         if D1Skipped == False:
-            if x.Pos == "RT" or x.Pos == "NC":
-                d1qualsession = [z for z in QaulyList if z.GP == x.GP]
+            if var_Driver1.Pos == "RT" or var_Driver1.Pos == "NC":
+                d1qualsession = [z for z in QaulyList if z.GP == var_Driver1.GP]
                 countPos = 0
                 for s in d1qualsession:
-                    if s.No == x.No:
+                    if s.No == var_Driver1.No:
                         countPos +=1
                         # Driver1PosList.append(countPos)
                         break
                     else:
                         countPos +=1
             else:
-                Driver1PosList.append(int(x.Pos))
+                Driver1PosList.append(int(var_Driver1.Pos))
         
         #check if driver finished the eace and add pos to list
         if D2Skipped == False:
-            if p.Pos == "RT" or p.Pos == "NC":
-                d2qualsession = [z for z in QaulyList if z.GP == p.GP]
+            if var_Driver2.Pos == "RT" or var_Driver2.Pos == "NC":
+                d2qualsession = [z for z in QaulyList if z.GP == var_Driver2.GP]
                 countPos = 0
                 for s in d2qualsession:
-                    if s.No == p.No:
+                    if s.No == var_Driver2.No:
                         countPos +=1
                         # Driver2PosList.append(countPos)
                         break
                     else:
                         countPos +=1
             else:
-                Driver2PosList.append(int(p.Pos))
+                Driver2PosList.append(int(var_Driver2.Pos))
 
             #Get driver best time from highest session they both competed in
         if D1Skipped == False and D2Skipped == False:
-            if x.Q3 != '' and p.Q3 != '':
-                if x.Q3 == 'DNF' or p.Q3 == 'DNF'  or x.Q3 == 'DNS' or p.Q3 == 'DNS':
-                    Driver1Time = x.Q2
-                    Driver2Time = p.Q2
+            if var_Driver1.Q3 != '' and var_Driver2.Q3 != '':
+                if var_Driver1.Q3 == 'DNF' or var_Driver2.Q3 == 'DNF'  or var_Driver1.Q3 == 'DNS' or var_Driver2.Q3 == 'DNS':
+                    Driver1Time = var_Driver1.Q2
+                    Driver2Time = var_Driver2.Q2
 
                 else:
-                    Driver1Time = x.Q3
-                    Driver2Time = p.Q3
+                    Driver1Time = var_Driver1.Q3
+                    Driver2Time = var_Driver2.Q3
 
-            elif x.Q2 != ''  and p.Q2 != '':
-                if x.Q2 == 'DNF'  or p.Q2 == 'DNF' or x.Q2 == 'DNS'  or p.Q2 == 'DNS':
-                    Driver1Time = x.Q1
-                    Driver2Time = p.Q1
+            elif var_Driver1.Q2 != ''  and var_Driver2.Q2 != '':
+                if var_Driver1.Q2 == 'DNF'  or var_Driver2.Q2 == 'DNF' or var_Driver1.Q2 == 'DNS'  or var_Driver2.Q2 == 'DNS':
+                    Driver1Time = var_Driver1.Q1
+                    Driver2Time = var_Driver2.Q1
 
                 else:
-                    Driver1Time = x.Q2
-                    Driver2Time = p.Q2
+                    Driver1Time = var_Driver1.Q2
+                    Driver2Time = var_Driver2.Q2
 
             else:
-                Driver1Time = x.Q1
-                Driver2Time = p.Q1
+                Driver1Time = var_Driver1.Q1
+                Driver2Time = var_Driver2.Q1
 
         #count qualy appearnaces
         if D1Skipped == False:
-            if x.Pos != 'NC' and x.Pos != 'RT':
-                if int(x.Pos) <= 10:
+            if var_Driver1.Pos != 'NC' and var_Driver1.Pos != 'RT':
+                if int(var_Driver1.Pos) <= 10:
                     D1Q3 += 1
                     D1Q2 += 1
-                if int(x.Pos) > 10 and int(x.Pos) <= 15:
+                if int(var_Driver1.Pos) > 10 and int(var_Driver1.Pos) <= 15:
                     D1Q2 += 1
         if D2Skipped == False:
-            if p.Pos != 'NC' and p.Pos != 'RT':
-                if int(p.Pos) <= 10:
+            if var_Driver2.Pos != 'NC' and var_Driver2.Pos != 'RT':
+                if int(var_Driver2.Pos) <= 10:
                     D2Q3 += 1
                     D2Q2 += 1
-                if int(p.Pos) > 10 and int(p.Pos) <= 15:
+                if int(var_Driver2.Pos) > 10 and int(var_Driver2.Pos) <= 15:
                     D2Q2 += 1
         
     
         #count time driver finished ahead of other
         if D1Skipped == False and D2Skipped == False:
-            if x.Pos == "RT" or x.Pos == "NC":
-                if p.Pos == "RT" or p.Pos == "NC": 
+            if var_Driver1.Pos == "RT" or var_Driver1.Pos == "NC":
+                if var_Driver2.Pos == "RT" or var_Driver2.Pos == "NC": 
                     D1Record += 0
                     D2Record += 0
                 else:
                     D2Record += 1
-            elif p.Pos == "RT" or p.Pos == "NC":
-                if x.Pos == "RT" or x.Pos == "NC": 
+            elif var_Driver2.Pos == "RT" or var_Driver2.Pos == "NC":
+                if var_Driver1.Pos == "RT" or var_Driver1.Pos == "NC": 
                     D1Record += 0
                     D2Record += 0
                 else:
                     D1Record += 1
             else:
-                if int(x.Pos) < int(p.Pos):
+                if int(var_Driver1.Pos) < int(var_Driver2.Pos):
                     D1Record += 1
-                elif int(x.Pos) > int(p.Pos):
+                elif int(var_Driver1.Pos) > int(var_Driver2.Pos):
                     D2Record += 1
 
         #check if both drivers have set a proper time.
-        if Driver1Time == 'DNF' or Driver1Time == 'RT' or Driver2Time == 'DNF' or Driver2Time == 'RT' or Driver1Time == '' or Driver2Time == '' or x.Pos == 'NC' or p.Pos == 'NC':
+        if Driver1Time == 'DNF' or Driver1Time == 'RT' or Driver2Time == 'DNF' or Driver2Time == 'RT' or Driver1Time == '' or Driver2Time == '' or var_Driver1.Pos == 'NC' or var_Driver2.Pos == 'NC':
             D1Skipped = False
             D2Skipped = False
         else:
@@ -841,95 +841,95 @@ def GetRaceDriverStats(Driver1,Driver2):
     for y in GPList:
 
         #Get current sessions for both drivers
-        x = next((z for z in Driver1Sessions if z.GP == y),'NotFound')
-        p = next((z for z in Driver2Sessions if z.GP == y),'NotFound')
+        var_Driver1 = next((z for z in Driver1Sessions if z.GP == y),'NotFound')
+        var_Driver2 = next((z for z in Driver2Sessions if z.GP == y),'NotFound')
         
 
-        if x == 'NotFound':
+        if var_Driver1 == 'NotFound':
             D1Skipped = True
-        if p == 'NotFound':
+        if var_Driver2 == 'NotFound':
             D2Skipped = True
 
         
         #Add drivers position gain/loss to list dnf on included
         if D1Skipped == False:
-            if x.Time == 'DNF' or x.Time == 'DNS' or x.Pos == "DQ":
+            if var_Driver1.Time == 'DNF' or var_Driver1.Time == 'DNS' or var_Driver1.Pos == "DQ":
                 h = 'I have to use this cause python is drunk and cant pick up !='
             else:
-                StartPos = next((z.Pos for z in StartingGridList if z.No == x.No and z.GP == y),'NotFound')
+                StartPos = next((z.Pos for z in StartingGridList if z.No == var_Driver1.No and z.GP == y),'NotFound')
                 if StartPos != 'NotFound':
-                    PositionsMade = int(StartPos)  - int(x.Pos)
+                    PositionsMade = int(StartPos)  - int(var_Driver1.Pos)
                     D1PositionGainList.append(PositionsMade)
         if D2Skipped == False:
-            if p.Time == 'DNF' or p.Time == 'DNS' or p.Pos == "DQ":
+            if var_Driver2.Time == 'DNF' or var_Driver2.Time == 'DNS' or var_Driver2.Pos == "DQ":
                 h = 'I have to use this cause python i drunk and cant pick up !='
             else:
-                StartPos = next((z.Pos for z in StartingGridList if z.No == p.No and z.GP == y),'NotFound')
+                StartPos = next((z.Pos for z in StartingGridList if z.No == var_Driver2.No and z.GP == y),'NotFound')
                 if StartPos != 'NotFound':
-                    PositionsMade = int(StartPos) - int(p.Pos)
+                    PositionsMade = int(StartPos) - int(var_Driver2.Pos)
                     D2PositionGainList.append(PositionsMade)
 
         if D1Skipped == False:
             #Total DNFS
-            if x.Time == 'DNF':
+            if var_Driver1.Time == 'DNF':
                 D1DNF +=1
         if D2Skipped == False:
-            if p.Time == 'DNF':
+            if var_Driver2.Time == 'DNF':
                 D2DNF +=1
 
-        # if x == []:
+        # if var_Driver1 == []:
         #     T1Skipped = True
-        # if p == []:
+        # if var_Driver2 == []:
         #     T2Skipped = True
 
 
         # Get drivers Postions thyve finiished in and the points they ended with
         # CHeck if driver has been classifed and depending on that add to one list or another
         if D1Skipped == False:
-            if x.Pos == "RT" or x.Pos == "NC" or x.Pos == "DQ":
-                d1racesession = [z for z in RaceList if z.GP == x.GP]
+            if var_Driver1.Pos == "RT" or var_Driver1.Pos == "NC" or var_Driver1.Pos == "DQ":
+                d1racesession = [z for z in RaceList if z.GP == var_Driver1.GP]
                 countPos = 0
                 for s in d1racesession:
-                    if s.No == x.No:
+                    if s.No == var_Driver1.No:
                         countPos +=1
                         Driver1PosListWithNC.append(countPos)
-                        Driver1PointListWithNC.append(float(x.Pts))
+                        Driver1PointListWithNC.append(float(var_Driver1.Pts))
                         break
                     else:
                         countPos +=1
 
             else:
-                Driver1PosList.append(int(x.Pos))
-                Driver1PosListWithNC.append(int(x.Pos))
-                Driver1PointList.append(float(x.Pts))
-                Driver1PointListWithNC.append(float(x.Pts))
+                Driver1PosList.append(int(var_Driver1.Pos))
+                Driver1PosListWithNC.append(int(var_Driver1.Pos))
+                Driver1PointList.append(float(var_Driver1.Pts))
+                Driver1PointListWithNC.append(float(var_Driver1.Pts))
 
         if D2Skipped == False:
-            if p.Pos == "RT" or p.Pos == "NC" or p.Pos == "DQ":
-                d2racesession = [z for z in RaceList if z.GP == p.GP]
+            if var_Driver2.Pos == "RT" or var_Driver2.Pos == "NC" or var_Driver2.Pos == "DQ":
+                d2racesession = [z for z in RaceList if z.GP == var_Driver2.GP]
                 countPos = 0
                 for s in d2racesession:
-                    if s.No == p.No:
+                    if s.No == var_Driver2.No:
                         countPos +=1
                         Driver2PosListWithNC.append(countPos)
-                        Driver2PointListWithNC.append(int(p.Pts))
+                        Driver2PointListWithNC.append(int(var_Driver2.Pts))
                         break
                     else:
                         countPos +=1
             
             else:
-                Driver2PosList.append(int(p.Pos))
-                Driver2PosListWithNC.append(int(p.Pos))
-                Driver2PointList.append(float(p.Pts))
-                Driver2PointListWithNC.append(float(p.Pts))
+                Driver2PosList.append(int(var_Driver2.Pos))
+                Driver2PosListWithNC.append(int(var_Driver2.Pos))
+                Driver2PointList.append(float(var_Driver2.Pts))
+                Driver2PointListWithNC.append(float(var_Driver2.Pts))
 
 
 
         # Get fastes laps of that race from drivers
         if D1Skipped == False:
-            D1FastestLaps = next((z for z in FastestLaps if z.No == x.No and z.GP == y),'NotFound')
+            D1FastestLaps = next((z for z in FastestLaps if z.No == var_Driver1.No and z.GP == y),'NotFound')
         if D2Skipped == False:
-            D2FastestLaps = next((z for z in FastestLaps if z.No == p.No and z.GP == y),'NotFound')
+            D2FastestLaps = next((z for z in FastestLaps if z.No == var_Driver2.No and z.GP == y),'NotFound')
 
         if  D1Skipped == False and D2Skipped == False:
          # Determine who was faster based on psotion
@@ -941,20 +941,20 @@ def GetRaceDriverStats(Driver1,Driver2):
         
         #who finiahed ahead
         if D1Skipped == False and D2Skipped == False:
-            if x.Pos == "RT" or x.Pos == "NC" or x.Pos == "DQ":
-                if p.Pos == "RT" or p.Pos == "NC" or p.Pos == "DQ": 
+            if var_Driver1.Pos == "RT" or var_Driver1.Pos == "NC" or var_Driver1.Pos == "DQ":
+                if var_Driver2.Pos == "RT" or var_Driver2.Pos == "NC" or var_Driver2.Pos == "DQ": 
                     D1Record += 0
                     D2Record += 0
                 else:
                     D2Record += 1
-            elif p.Pos == "RT" or p.Pos == "NC" or p.Pos == "DQ":
-                if x.Pos == "RT" or x.Pos == "NC" or x.Pos == "DQ": 
+            elif var_Driver2.Pos == "RT" or var_Driver2.Pos == "NC" or var_Driver2.Pos == "DQ":
+                if var_Driver1.Pos == "RT" or var_Driver1.Pos == "NC" or var_Driver1.Pos == "DQ": 
                     D1Record += 0
                     D2Record += 0
                 else:
                     D1Record += 1
             else:
-                if int(x.Pos) < int(p.Pos):
+                if int(var_Driver1.Pos) < int(var_Driver2.Pos):
                     D1Record += 1
                 else:
                     D2Record += 1
@@ -1141,12 +1141,12 @@ def GetTeamQaulyStats(Team1,Team2):
     for y in GPList:
 
         #Get current gp qualy for each driver
-        x = [z for z in Team1Sessions if z.GP == y]
-        p = [z for z in Team2Sessions if z.GP == y]
+        var_Team1 = [z for z in Team1Sessions if z.GP == y]
+        var_Team2 = [z for z in Team2Sessions if z.GP == y]
     
-        if x == []:
+        if var_Team1 == []:
             T1Skipped = True
-        if p == []:
+        if var_Team2 == []:
             T2Skipped = True
 
 
@@ -1165,14 +1165,14 @@ def GetTeamQaulyStats(Team1,Team2):
         #List of postions teams have finished in
         countDriverPos = 0
         if T1Skipped == False:
-            for d1 in x:
+            for d1 in var_Team1:
                 if d1.Pos == "RT" or d1.Pos == "NC":
                     d1qualsession = [z for z in QaulyList if z.GP == d1.GP]
                     countPos = 0
                     for s in d1qualsession:
                         if s.No == d1.No:
                             countPos +=1
-                            # x[countDriverPos].Pos = countPos
+                            # var_Team1[countDriverPos].Pos = countPos
                             # Team1PosList.append(countPos)
                             break
                         else:
@@ -1183,14 +1183,14 @@ def GetTeamQaulyStats(Team1,Team2):
         
         countDriverPos = 0
         if T2Skipped == False:
-            for d2 in p:
+            for d2 in var_Team2:
                 if d2.Pos == "RT" or d2.Pos == "NC":
                     d2qualsession = [z for z in QaulyList if z.GP == d2.GP]
                     countPos = 0
                     for s in d2qualsession:
                         if s.No == d2.No:
                             countPos +=1
-                            # p[countDriverPos].Pos = countPos
+                            # var_Team2[countDriverPos].Pos = countPos
                             # Team2PosList.append(countPos)
                             break
                         else:
@@ -1204,7 +1204,7 @@ def GetTeamQaulyStats(Team1,Team2):
         T1Qauly = 3
         T2Qauly = 3
         if T1Skipped == False and T2Skipped == False:
-            for w in x :
+            for w in var_Team1 :
                 if w.Q3 != '':
                     if w.Q3 == 'DNF':
                         DriverTime = w.Q2
@@ -1226,7 +1226,7 @@ def GetTeamQaulyStats(Team1,Team2):
                     DriverTime = w.Q1
                     T1Qauly = 2
 
-            for w in p :
+            for w in var_Team2 :
                 if w.Q3 != '':
                     if w.Q3 == 'DNF':
                         DriverTime = w.Q2
@@ -1257,30 +1257,30 @@ def GetTeamQaulyStats(Team1,Team2):
                 lowestqualy = T1Qauly
             
             if lowestqualy == 1:
-                for w in x :
+                for w in var_Team1 :
                     DriverTime = w.Q1
                     Team1TimeList.append(DriverTime)
-                for w in p :
+                for w in var_Team2 :
                     DriverTime = w.Q1
                     Team2TimeList.append(DriverTime)
             elif lowestqualy == 2:
-                for w in x :
+                for w in var_Team1 :
                     DriverTime = w.Q2
                     Team1TimeList.append(DriverTime)
-                for w in p :
+                for w in var_Team2 :
                     DriverTime = w.Q2
                     Team2TimeList.append(DriverTime)
             elif lowestqualy == 3:
-                for w in x :
+                for w in var_Team1 :
                     DriverTime = w.Q3
                     Team1TimeList.append(DriverTime)
-                for w in p :
+                for w in var_Team2 :
                     DriverTime = w.Q3
                     Team2TimeList.append(DriverTime)
 
         #get no. of q2 and q2 appreances
         if T1Skipped == False:
-            for w in x :
+            for w in var_Team1 :
                 if w.Pos != 'NC' and w.Pos != 'RT':
                     if int(w.Pos) <= 10:
                         T1Q3 += 1
@@ -1289,7 +1289,7 @@ def GetTeamQaulyStats(Team1,Team2):
                         T1Q2 += 1
 
         if T2Skipped == False:
-            for w in p :
+            for w in var_Team2 :
                 if w.Pos != 'NC' and w.Pos != 'RT':
                     if int(w.Pos) <= 10:
                         T2Q3 += 1
@@ -1401,7 +1401,7 @@ def GetTeamRaceStats(Team1,Team2):
     GPList = []
     for t in RaceList:
         if t.GP in GPList:
-            x= 2
+            var_Team1= 2
         else:
             GPList.append(t.GP)
 
@@ -1421,11 +1421,11 @@ def GetTeamRaceStats(Team1,Team2):
     for y in GPList:
 
         #Get current sessions for both drivers
-        x = [z for z in Team1Sessions if z.GP == y]
-        p = [z for z in Team2Sessions if z.GP == y]
+        var_Team1 = [z for z in Team1Sessions if z.GP == y]
+        var_Team2 = [z for z in Team2Sessions if z.GP == y]
 
         #Add drivers position gain/loss to list dnf on included
-        for d1 in x:
+        for d1 in var_Team1:
             if d1.Time == 'DNF' or d1.Time == 'DNS' or d1.Pos == "DQ":
                 h = 'I have to use this cause python is drunk and cant pick up !='
             else:
@@ -1433,7 +1433,7 @@ def GetTeamRaceStats(Team1,Team2):
                 if StartPos != 'NotFound':
                     PositionsMade = int(StartPos)  - int(d1.Pos)
                     T1PositionGainList.append(PositionsMade)
-        for d2 in p:
+        for d2 in var_Team2:
             if d2.Time == 'DNF' or d2.Time == 'DNS' or d2.Pos == "DQ":
                 h = 'I have to use this cause python i drunk and cant pick up !='
             else:
@@ -1443,23 +1443,23 @@ def GetTeamRaceStats(Team1,Team2):
                     T2PositionGainList.append(PositionsMade)
 
         #Total DNFS
-        for d1 in x:
+        for d1 in var_Team1:
             if d1.Time == 'DNF':
                 T1DNF +=1
-        for d2 in x:
+        for d2 in var_Team1:
             if d2.Time == 'DNF':
                 T2DNF +=1
 
-        if x == []:
+        if var_Team1 == []:
             T1Skipped = True
-        if p == []:
+        if var_Team2 == []:
             T2Skipped = True
 
 
         # Get drivers Postions thyve finiished in and the points they ended with
         # CHeck if driver has been classifed and depending on that add to one list or another
         if T1Skipped == False:
-            for d1 in x:
+            for d1 in var_Team1:
                 if d1.Pos == "RT" or d1.Pos == "NC" or d1.Pos == "DQ":
                     t1qualsession = [z for z in RaceList if z.GP == d1.GP]
                     countPos = 0
@@ -1479,7 +1479,7 @@ def GetTeamRaceStats(Team1,Team2):
                     Team1PointListWithNC.append(float(d1.Pts))
 
         if T2Skipped == False:
-            for d2 in p:
+            for d2 in var_Team2:
                 if d2.Pos == "RT" or d2.Pos == "NC" or d2.Pos == "DQ":
                     t2qualsession = [z for z in RaceList if z.GP == d2.GP]
                     countPos = 0

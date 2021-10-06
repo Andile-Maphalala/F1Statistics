@@ -109,15 +109,15 @@ DATABASES = {
         'PORT' : '5432'
 
     },
-     'fia_db': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'FIADocDB',
-        'USER': 'postgres',
-        'PASSWORD': 'Ilove2code',
-        'HOST' : 'localhost',
-        'PORT' : '5432'
+    #  'fia_db': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'FIADocDB',
+    #     'USER': 'postgres',
+    #     'PASSWORD': 'Ilove2code',
+    #     'HOST' : 'localhost',
+    #     'PORT' : '5432'
 
-    }
+    # }
 }
 
 
